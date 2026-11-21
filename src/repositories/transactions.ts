@@ -133,6 +133,23 @@ export async function listAllTransactions(): Promise<Transaction[]> {
   return listTransactions()
 }
 
+/** 批量导入（微信账单等）：按 id 去重，已存在的记录跳过。 */
+export async function addImportedTransactions(
+  rows: Transaction[]
+): Promise<{ imported: number; skipped: number }> {
+  const unique = new Map(rows.map((row) => [row.id, row]))
+  const list = [...unique.values()]
+  if (list.length === 0) return { imported: 0, skipped: rows.length }
+
+  const existing = await db.transactions.bulkGet(list.map((row) => row.id))
+  const existingIds = new Set(
+    existing.filter((row): row is Transaction => Boolean(row)).map((row) => row.id)
+  )
+  const toAdd = list.filter((row) => !existingIds.has(row.id))
+  if (toAdd.length > 0) await db.transactions.bulkAdd(toAdd)
+  return { imported: toAdd.length, skipped: rows.length - toAdd.length }
+}
+
 /** 某月全部流水（用于统计页）。 */
 export async function monthTransactions(month: string): Promise<Transaction[]> {
   return listTransactions({ month })

@@ -13,6 +13,8 @@ import {
   type DataStats
 } from '@/services/backup'
 import { useLedgerStore } from '@/stores/useLedger'
+import { formatCents } from '@/services/money'
+import { accountIcon } from '@/services/accountMeta'
 import { confirmDialog } from '@/services/confirm'
 import { toast } from '@/services/toast'
 import {
@@ -22,6 +24,8 @@ import {
   type StorageStatus
 } from '@/services/storage'
 import { markBackupNow } from '@/repositories/settings'
+import { addImportedTransactions } from '@/repositories/transactions'
+import { decodeWechatCsv, parseWechatBill } from '@/services/wechat'
 import PageHeader from '@/components/PageHeader.vue'
 import AppIcon from '@/components/AppIcon.vue'
 
@@ -40,6 +44,12 @@ const stats = ref<DataStats>({
 })
 const storage = ref<StorageStatus | null>(null)
 const requestingPersist = ref(false)
+
+const wechatInput = ref<HTMLInputElement | null>(null)
+const wechatAccountId = ref('')
+const wechatImporting = ref(false)
+
+const wechatAccounts = computed(() => store.activeAccounts)
 
 const storagePercent = computed(() => {
   if (!storage.value?.quota) return 0
@@ -92,7 +102,69 @@ async function loadStorage(): Promise<void> {
 
 onMounted(async () => {
   await Promise.all([loadStats(), loadStorage()])
+  const preferred =
+    store.activeAccounts.find((account) => account.type === 'wechat') ?? store.activeAccounts[0]
+  wechatAccountId.value = preferred?.id ?? ''
 })
+
+function triggerWechatImport(): void {
+  wechatInput.value?.click()
+}
+
+async function onWechatFile(event: Event): Promise<void> {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  input.value = ''
+  if (!file) return
+
+  if (!wechatAccountId.value) {
+    toast('请先选择要记入的账户', 'error')
+    return
+  }
+  if (file.size > MAX_BACKUP_BYTES) {
+    toast('账单文件超过 10MB，已拒绝', 'error')
+    return
+  }
+
+  let result
+  try {
+    const text = decodeWechatCsv(await file.arrayBuffer())
+    result = parseWechatBill(text, wechatAccountId.value)
+  } catch (error) {
+    toast(error instanceof Error ? error.message : '账单解析失败', 'error')
+    return
+  }
+
+  const stats = result.stats
+  const ok = await confirmDialog({
+    title: '导入微信账单？',
+    message:
+      `识别 ${stats.imported} 笔：支出 ${stats.expenseCount} 笔 ¥${formatCents(stats.expenseCents)}，` +
+      `收入 ${stats.incomeCount} 笔 ¥${formatCents(stats.incomeCents)}；` +
+      `跳过 ${stats.skipped} 笔不计收支` +
+      `${stats.invalid > 0 ? `、${stats.invalid} 笔无法识别` : ''}。` +
+      `全部记为「未分类」，导入后可在明细里逐笔修改。`,
+    confirmText: '导入'
+  })
+  if (!ok) return
+
+  wechatImporting.value = true
+  try {
+    const imported = await addImportedTransactions(result.transactions)
+    await store.reloadAll()
+    await Promise.all([loadStats(), loadStorage()])
+    toast(
+      imported.imported > 0
+        ? `已导入 ${imported.imported} 笔未分类流水${imported.skipped > 0 ? `，跳过 ${imported.skipped} 笔已存在` : ''}`
+        : '这些记录都已存在，没有新增',
+      imported.imported > 0 ? 'success' : 'info'
+    )
+  } catch (error) {
+    toast(error instanceof Error ? error.message : '导入失败', 'error')
+  } finally {
+    wechatImporting.value = false
+  }
+}
 
 async function enablePersistent(): Promise<void> {
   requestingPersist.value = true
@@ -319,6 +391,43 @@ async function clearData(): Promise<void> {
         <AppIcon name="upload" :size="17" />
         {{ importing ? '导入中…' : '选择备份文件' }}
       </button>
+    </section>
+
+    <section class="card">
+      <h2 class="card-title">导入微信账单</h2>
+      <p class="paragraph">
+        微信没有开放个人账单接口，无法自动同步。请在微信「我 → 服务 → 钱包 → 账单 → 常见问题 → 下载账单」
+        导出 CSV，再在这里导入。文件只在本机解析，不会上传。
+      </p>
+
+      <div class="field">
+        <span class="field__label">记入账户</span>
+        <div class="chip-group">
+          <button
+            v-for="account in wechatAccounts"
+            :key="account.id"
+            class="chip"
+            :class="{ 'is-active': wechatAccountId === account.id }"
+            @click="wechatAccountId = account.id"
+          >
+            <AppIcon :name="accountIcon(account.type)" :size="14" />
+            {{ account.name }}
+          </button>
+        </div>
+      </div>
+
+      <input
+        ref="wechatInput"
+        class="hidden-input wechat-file-input"
+        type="file"
+        accept=".csv,text/csv"
+        @change="onWechatFile"
+      />
+      <button class="btn btn--block" :disabled="wechatImporting" @click="triggerWechatImport">
+        <AppIcon name="upload" :size="17" />
+        {{ wechatImporting ? '导入中…' : '选择微信账单 CSV' }}
+      </button>
+      <p class="hint">导入后统一为「未分类」；在明细页筛选「未分类」即可逐笔修改。</p>
     </section>
 
     <section class="card card--danger">

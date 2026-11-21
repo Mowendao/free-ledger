@@ -19,7 +19,7 @@ const store = useLedgerStore()
 const router = useRouter()
 
 const kindFilter = ref<'all' | 'expense' | 'income'>('all')
-const categoryFilter = ref<string | null>(null)
+const categoryFilter = ref<'all' | 'none' | string>('all')
 const accountFilter = ref('')
 const keyword = ref('')
 const amountMin = ref('')
@@ -55,7 +55,11 @@ const filtered = computed(() => {
       minCents: searchActive.value ? minCents.value : null,
       maxCents: searchActive.value ? maxCents.value : null,
       kind: kindFilter.value,
-      categoryId: categoryFilter.value,
+      categoryId:
+        categoryFilter.value !== 'all' && categoryFilter.value !== 'none'
+          ? categoryFilter.value
+          : null,
+      uncategorized: categoryFilter.value === 'none',
       accountId: accountFilter.value
     },
     store.categories,
@@ -67,7 +71,7 @@ const resultSummary = computed(() => summarize(filtered.value))
 
 const filterCount = computed(
   () =>
-    (categoryFilter.value ? 1 : 0) +
+    (categoryFilter.value !== 'all' ? 1 : 0) +
     (accountFilter.value ? 1 : 0) +
     (minCents.value !== null || maxCents.value !== null ? 1 : 0)
 )
@@ -116,7 +120,7 @@ function toggleSearch(): void {
 }
 
 function resetFilters(): void {
-  categoryFilter.value = null
+  categoryFilter.value = 'all'
   accountFilter.value = ''
   amountMin.value = ''
   amountMax.value = ''
@@ -245,10 +249,17 @@ function openTx(transaction: Transaction): void {
       <div class="filter-grid">
         <button
           class="chip"
-          :class="{ 'is-active': !categoryFilter }"
-          @click="categoryFilter = null"
+          :class="{ 'is-active': categoryFilter === 'all' }"
+          @click="categoryFilter = 'all'"
         >
           全部分类
+        </button>
+        <button
+          class="chip"
+          :class="{ 'is-active': categoryFilter === 'none' }"
+          @click="categoryFilter = 'none'"
+        >
+          未分类
         </button>
         <button
           v-for="category in store.categories"

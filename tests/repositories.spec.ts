@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { db } from '@/db/schema'
 import { resetDb } from '@/db/init'
 import {
+  addImportedTransactions,
   countDeletedTransactions,
   createTransaction,
   deleteTransaction,
@@ -244,6 +245,43 @@ describe('分类迁移删除', () => {
     const result = await deleteCategory(custom.id, incomeTarget.id)
     expect(result.ok).toBe(false)
     expect(result.reason).toContain('同类型')
+  })
+})
+
+describe('批量导入去重', () => {
+  it('按 id 跳过已存在的记录', async () => {
+    const accountId = await firstAccountId()
+    const now = Date.now()
+    const rows = [
+      {
+        id: 'wx-test-1',
+        kind: 'expense' as const,
+        amountCents: 350,
+        categoryId: null,
+        accountId,
+        toAccountId: null,
+        date: '2026-11-21',
+        note: '便利店',
+        createdAt: now,
+        updatedAt: now
+      },
+      {
+        id: 'wx-test-2',
+        kind: 'income' as const,
+        amountCents: 5000,
+        categoryId: null,
+        accountId,
+        toAccountId: null,
+        date: '2026-11-20',
+        note: '转账',
+        createdAt: now,
+        updatedAt: now
+      }
+    ]
+
+    expect(await addImportedTransactions(rows)).toEqual({ imported: 2, skipped: 0 })
+    expect(await addImportedTransactions(rows)).toEqual({ imported: 0, skipped: 2 })
+    expect(await listTransactions({})).toHaveLength(2)
   })
 })
 

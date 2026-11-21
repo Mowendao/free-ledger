@@ -42,7 +42,7 @@
 | `id` | string (PK) | UUID |
 | `kind` | `expense` \| `income` \| `transfer` | 转账只记一行 |
 | `amountCents` | int | > 0 且 ≤ 999,999,999（¥9,999,999.99） |
-| `categoryId` | string \| null | 转账必须为 null |
+| `categoryId` | string \| null | 转账必须为 null；`null` 表示「未分类」（如微信账单导入） |
 | `accountId` | string | 支出/收入账户；转账的转出账户 |
 | `toAccountId` | string \| null | 仅转账使用，且 ≠ `accountId` |
 | `date` | string | `YYYY-MM-DD`，必须是通过 `isValidDate` 校验的真实日期 |

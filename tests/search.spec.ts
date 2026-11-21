@@ -102,6 +102,10 @@ describe('全时段搜索', () => {
 
     const bank = filterTransactions(rows, { accountId: 'bank' }, categories, accounts)
     expect(bank).toHaveLength(1)
+
+    const uncategorized = filterTransactions(rows, { uncategorized: true }, categories, accounts)
+    expect(uncategorized).toHaveLength(1)
+    expect(uncategorized[0].categoryId).toBeNull()
   })
 
   it('结果按日期倒序', () => {

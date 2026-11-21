@@ -7,6 +7,8 @@ export interface SearchFilter {
   maxCents?: number | null
   kind?: 'all' | 'expense' | 'income'
   categoryId?: string | null
+  /** 只看未分类（微信导入等） */
+  uncategorized?: boolean
   accountId?: string
 }
 
@@ -25,7 +27,11 @@ export function filterTransactions(
   return transactions
     .filter((transaction) => {
       if (filter.kind && filter.kind !== 'all' && transaction.kind !== filter.kind) return false
-      if (filter.categoryId && transaction.categoryId !== filter.categoryId) return false
+      if (filter.uncategorized) {
+        if (transaction.categoryId !== null) return false
+      } else if (filter.categoryId && transaction.categoryId !== filter.categoryId) {
+        return false
+      }
       if (filter.accountId && transaction.accountId !== filter.accountId) return false
       if (min !== null && transaction.amountCents < min) return false
       if (max !== null && transaction.amountCents > max) return false
