@@ -44,6 +44,7 @@ export async function listTransactions(query: TxQuery = {}): Promise<Transaction
   }
 
   const keyword = query.keyword?.trim().toLowerCase()
+  rows = rows.filter((t) => !t.deletedAt)
   if (query.kind) rows = rows.filter((t) => t.kind === query.kind)
   if (query.categoryId !== undefined && query.categoryId !== null) {
     rows = rows.filter((t) => t.categoryId === query.categoryId)
@@ -59,7 +60,8 @@ export async function listTransactions(query: TxQuery = {}): Promise<Transaction
 }
 
 export async function getTransaction(id: string): Promise<Transaction | undefined> {
-  return db.transactions.get(id)
+  const transaction = await db.transactions.get(id)
+  return transaction && !transaction.deletedAt ? transaction : undefined
 }
 
 export async function createTransaction(input: TxInput): Promise<Transaction> {
@@ -98,7 +100,12 @@ export async function updateTransaction(id: string, input: TxInput): Promise<voi
 }
 
 export async function deleteTransaction(id: string): Promise<void> {
-  await db.transactions.delete(id)
+  await db.transactions.update(id, { deletedAt: Date.now(), updatedAt: Date.now() })
+}
+
+/** 撤销删除：把流水从回收站恢复。 */
+export async function restoreTransaction(id: string): Promise<void> {
+  await db.transactions.update(id, { deletedAt: null, updatedAt: Date.now() })
 }
 
 export async function listAllTransactions(): Promise<Transaction[]> {
@@ -116,7 +123,8 @@ export async function transactionsSince(months: string[]): Promise<Transaction[]
   const start = `${months[0]}-01`
   const last = months[months.length - 1]
   const end = `${last}-31`
-  return db.transactions.where('date').between(start, end, true, true).toArray()
+  const rows = await db.transactions.where('date').between(start, end, true, true).toArray()
+  return rows.filter((t) => !t.deletedAt)
 }
 
 export function monthOfTransaction(transaction: Transaction): string {

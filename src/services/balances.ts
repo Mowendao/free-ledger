@@ -9,6 +9,7 @@ export function computeBalances(accounts: Account[], transactions: Transaction[]
   for (const account of accounts) balances[account.id] = account.initialBalanceCents
 
   for (const t of transactions) {
+    if (t.deletedAt) continue
     if (t.kind === 'expense') {
       balances[t.accountId] = (balances[t.accountId] ?? 0) - t.amountCents
     } else if (t.kind === 'income') {

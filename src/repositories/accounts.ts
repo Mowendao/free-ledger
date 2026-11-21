@@ -57,7 +57,8 @@ export async function setAccountArchived(id: string, archived: boolean): Promise
 }
 
 export async function countAccountUsage(id: string): Promise<number> {
-  return db.transactions.where('accountId').equals(id).count()
+  const rows = await db.transactions.where('accountId').equals(id).toArray()
+  return rows.filter((transaction) => !transaction.deletedAt).length
 }
 
 /** 删除账户：有流水时拒绝，调用方应改为归档。 */

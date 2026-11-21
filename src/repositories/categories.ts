@@ -50,7 +50,8 @@ export async function updateCategory(
 }
 
 export async function countCategoryUsage(id: string): Promise<number> {
-  return db.transactions.where('categoryId').equals(id).count()
+  const rows = await db.transactions.where('categoryId').equals(id).toArray()
+  return rows.filter((transaction) => !transaction.deletedAt).length
 }
 
 /** 删除分类：内置分类与被引用分类都拒绝删除。 */

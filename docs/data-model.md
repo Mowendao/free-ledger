@@ -48,6 +48,7 @@
 | `date` | string | `YYYY-MM-DD`，必须是通过 `isValidDate` 校验的真实日期 |
 | `note` | string | ≤ 100 字 |
 | `createdAt` / `updatedAt` | int | 毫秒时间戳，合并导入用 `updatedAt` 决胜 |
+| `deletedAt` | int \| null \| 缺省 | 软删除时间；有值表示在回收站，不参与列表、统计、余额与备份 |
 
 索引：`id, date, kind, categoryId, accountId, [date+kind]`。
 
@@ -88,6 +89,7 @@
 4. 流水引用的账户必须存在（导入时校验）。
 5. 余额恒等式：`余额 = 期初 + 收入 − 支出 + 转入 − 转出`。
 6. 删除数据必须二次确认。
+7. `deletedAt` 非空的流水视为回收站数据：不计入余额/统计、不出现在列表与备份；30 天后自动清理。
 
 ## 迁移策略
 

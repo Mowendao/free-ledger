@@ -106,7 +106,8 @@ function parseTransaction(raw: unknown, index: number): Transaction {
     date,
     note: typeof raw.note === 'string' ? raw.note.slice(0, 100) : '',
     createdAt: needInt(raw.createdAt ?? Date.now(), '流水创建时间'),
-    updatedAt: needInt(raw.updatedAt ?? Date.now(), '流水更新时间')
+    updatedAt: needInt(raw.updatedAt ?? Date.now(), '流水更新时间'),
+    deletedAt: typeof raw.deletedAt === 'number' ? raw.deletedAt : null
   }
 }
 
@@ -132,7 +133,7 @@ export async function buildBackup(): Promise<BackupFile> {
   const [accounts, categories, transactions, budgets, settings] = await Promise.all([
     db.accounts.toArray(),
     db.categories.toArray(),
-    db.transactions.toArray(),
+    db.transactions.filter((transaction) => !transaction.deletedAt).toArray(),
     db.budgets.toArray(),
     db.settings.toArray()
   ])
@@ -295,7 +296,7 @@ function csvEscape(value: string): string {
 /** 导出 CSV：带 BOM，Excel 直接打开不乱码。 */
 export async function buildCsv(): Promise<string> {
   const [transactions, categories, accounts] = await Promise.all([
-    db.transactions.toArray(),
+    db.transactions.filter((transaction) => !transaction.deletedAt).toArray(),
     db.categories.toArray(),
     db.accounts.toArray()
   ])
@@ -338,21 +339,20 @@ export interface DataStats {
 }
 
 export async function getDataStats(): Promise<DataStats> {
-  const [transactions, accounts, categories, budgets, first, last] = await Promise.all([
-    db.transactions.count(),
+  const [transactions, accounts, categories, budgets] = await Promise.all([
+    db.transactions.filter((transaction) => !transaction.deletedAt).toArray(),
     db.accounts.count(),
     db.categories.count(),
-    db.budgets.count(),
-    db.transactions.orderBy('date').first(),
-    db.transactions.orderBy('date').last()
+    db.budgets.count()
   ])
+  const sorted = transactions.slice().sort((a, b) => a.date.localeCompare(b.date))
   return {
-    transactions,
+    transactions: transactions.length,
     accounts,
     categories,
     budgets,
-    firstDate: first?.date ?? null,
-    lastDate: last?.date ?? null
+    firstDate: sorted[0]?.date ?? null,
+    lastDate: sorted[sorted.length - 1]?.date ?? null
   }
 }
 

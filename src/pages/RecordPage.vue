@@ -7,10 +7,12 @@ import {
   createTransaction,
   deleteTransaction,
   getTransaction,
+  restoreTransaction,
   updateTransaction
 } from '@/repositories/transactions'
 import { parseCents, toAmountInput } from '@/services/money'
 import { isValidDate, monthOf, todayISO } from '@/services/dates'
+import { requestPersistentStorage } from '@/services/storage'
 import { accountIcon } from '@/services/accountMeta'
 import { toast } from '@/services/toast'
 import { confirmDialog } from '@/services/confirm'
@@ -144,6 +146,7 @@ async function save(): Promise<void> {
     }
     await createTransaction(input)
     await store.reloadAll()
+    void requestPersistentStorage()
     toast('已记一笔')
     amount.value = '0'
     note.value = ''
@@ -157,16 +160,24 @@ async function save(): Promise<void> {
 
 async function remove(): Promise<void> {
   if (!editingId.value) return
+  const id = editingId.value
   const ok = await confirmDialog({
     title: '删除这笔记录？',
-    message: '删除后无法恢复。',
+    message: '删除后可在提示条里撤销，回收站保留 30 天。',
     confirmText: '删除',
     danger: true
   })
   if (!ok) return
-  await deleteTransaction(editingId.value)
+  await deleteTransaction(id)
   await store.reloadAll()
-  toast('已删除')
+  toast('已删除这笔记录', 'info', {
+    label: '撤销',
+    onClick: async () => {
+      await restoreTransaction(id)
+      await store.reloadAll()
+      toast('已恢复')
+    }
+  })
   router.replace('/ledger')
 }
 

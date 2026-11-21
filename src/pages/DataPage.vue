@@ -15,6 +15,12 @@ import {
 import { useLedgerStore } from '@/stores/useLedger'
 import { confirmDialog } from '@/services/confirm'
 import { toast } from '@/services/toast'
+import {
+  formatBytes,
+  getStorageStatus,
+  requestPersistentStorage,
+  type StorageStatus
+} from '@/services/storage'
 import { markBackupNow } from '@/repositories/settings'
 import PageHeader from '@/components/PageHeader.vue'
 import AppIcon from '@/components/AppIcon.vue'
@@ -31,6 +37,19 @@ const stats = ref<DataStats>({
   budgets: 0,
   firstDate: null,
   lastDate: null
+})
+const storage = ref<StorageStatus | null>(null)
+const requestingPersist = ref(false)
+
+const storagePercent = computed(() => {
+  if (!storage.value?.quota) return 0
+  return Math.min(100, Math.round((storage.value.usage / storage.value.quota) * 1000) / 10)
+})
+
+const persistLabel = computed(() => {
+  if (!storage.value) return '检测中'
+  if (!storage.value.supported) return '浏览器不支持'
+  return storage.value.persisted ? '已启用' : '未启用'
 })
 
 const lastBackupLabel = computed(() => {
@@ -67,7 +86,27 @@ async function loadStats(): Promise<void> {
   stats.value = await getDataStats()
 }
 
-onMounted(loadStats)
+async function loadStorage(): Promise<void> {
+  storage.value = await getStorageStatus()
+}
+
+onMounted(async () => {
+  await Promise.all([loadStats(), loadStorage()])
+})
+
+async function enablePersistent(): Promise<void> {
+  requestingPersist.value = true
+  try {
+    const granted = await requestPersistentStorage()
+    await loadStorage()
+    toast(
+      granted ? '已启用持久化存储' : '浏览器未授予，请继续定期导出备份',
+      granted ? 'success' : 'info'
+    )
+  } finally {
+    requestingPersist.value = false
+  }
+}
 
 async function exportJson(): Promise<void> {
   try {
@@ -130,7 +169,7 @@ async function onFileChange(event: Event): Promise<void> {
       mode.value === 'replace' ? await replaceWithBackup(backup) : await mergeWithBackup(backup)
     await store.reloadAll()
     await store.refreshSettings()
-    await loadStats()
+    await Promise.all([loadStats(), loadStorage()])
     toast(`导入完成：新增 ${result.imported}，跳过 ${result.skipped}`)
   } catch (error) {
     toast(error instanceof Error ? error.message : '导入失败', 'error')
@@ -159,7 +198,7 @@ async function clearData(): Promise<void> {
   await clearAllData()
   await store.reloadAll()
   await store.refreshSettings()
-  await loadStats()
+  await Promise.all([loadStats(), loadStorage()])
   toast('数据已清空')
 }
 </script>
@@ -188,6 +227,32 @@ async function clearData(): Promise<void> {
           <span class="data-stats__label">预算</span>
         </div>
       </div>
+      <div class="storage">
+        <div class="storage__row">
+          <span>持久化存储</span>
+          <span class="storage__badge" :class="{ 'is-on': storage?.persisted }">{{ persistLabel }}</span>
+        </div>
+        <div class="storage__row">
+          <span>已用空间</span>
+          <span>{{ formatBytes(storage?.usage ?? 0) }} / {{ formatBytes(storage?.quota ?? 0) }}</span>
+        </div>
+        <div class="progress">
+          <div class="progress__bar" :style="{ width: `${storagePercent}%` }" />
+        </div>
+        <button
+          v-if="storage?.supported && !storage.persisted"
+          class="btn btn--block storage__btn"
+          :disabled="requestingPersist"
+          @click="enablePersistent"
+        >
+          {{ requestingPersist ? '申请中…' : '申请持久化存储' }}
+        </button>
+      </div>
+
+      <p class="hint">
+        持久化能降低浏览器清理数据的概率，但仍建议定期导出 JSON 备份。
+      </p>
+
       <p class="hint">
         最近备份：{{ lastBackupLabel }}
         <template v-if="stats.firstDate">
@@ -204,7 +269,7 @@ async function clearData(): Promise<void> {
       <div class="button-row">
         <button class="btn btn--primary form__grow" @click="exportJson">
           <AppIcon name="download" :size="17" />
-          导出 JSON 备份
+          导出 JSON
         </button>
         <button class="btn form__grow" @click="exportCsv">
           <AppIcon name="download" :size="17" />

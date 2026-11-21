@@ -52,6 +52,14 @@ describe('computeBalances', () => {
     expect(balances.credit).toBe(-2500)
   })
 
+  it('忽略回收站中的流水', () => {
+    const balances = computeBalances(
+      [account('cash', 1000)],
+      [tx({ kind: 'expense', amountCents: 500, deletedAt: Date.now() })]
+    )
+    expect(balances.cash).toBe(1000)
+  })
+
   it('未知账户也能累计', () => {
     const balances = computeBalances([], [tx({ accountId: 'ghost', amountCents: 700 })])
     expect(balances.ghost).toBe(-700)

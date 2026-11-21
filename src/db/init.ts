@@ -6,18 +6,24 @@ import { DEFAULT_SETTINGS } from './schema'
 export async function initDb(): Promise<void> {
   await db.open()
   const seeded = await db.meta.get('seeded')
-  if (seeded) return
+  if (!seeded) {
+    await db.transaction('rw', db.categories, db.accounts, db.settings, db.meta, async () => {
+      if (await db.meta.get('seeded')) return
+      await db.categories.bulkAdd(buildCategorySeeds())
+      await db.accounts.bulkAdd(buildAccountSeeds())
+      for (const [key, value] of Object.entries(DEFAULT_SETTINGS)) {
+        await db.settings.put({ key, value })
+      }
+      await db.meta.put({ key: 'seeded', value: 1 })
+      await db.meta.put({ key: 'schemaVersion', value: 1 })
+    })
+  }
 
-  await db.transaction('rw', db.categories, db.accounts, db.settings, db.meta, async () => {
-    if (await db.meta.get('seeded')) return
-    await db.categories.bulkAdd(buildCategorySeeds())
-    await db.accounts.bulkAdd(buildAccountSeeds())
-    for (const [key, value] of Object.entries(DEFAULT_SETTINGS)) {
-      await db.settings.put({ key, value })
-    }
-    await db.meta.put({ key: 'seeded', value: 1 })
-    await db.meta.put({ key: 'schemaVersion', value: 1 })
-  })
+  // 回收站保留 30 天，超期清理
+  const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000
+  await db.transactions
+    .filter((transaction) => typeof transaction.deletedAt === 'number' && transaction.deletedAt < cutoff)
+    .delete()
 }
 
 /** 仅供测试：清空并重建数据库。 */

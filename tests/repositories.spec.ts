@@ -1,7 +1,13 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { db } from '@/db/schema'
 import { resetDb } from '@/db/init'
-import { createTransaction, listTransactions } from '@/repositories/transactions'
+import {
+  createTransaction,
+  deleteTransaction,
+  getTransaction,
+  listTransactions,
+  restoreTransaction
+} from '@/repositories/transactions'
 import { deleteAccount, listAccounts, createAccount } from '@/repositories/accounts'
 import { createCategory, deleteCategory, listCategories } from '@/repositories/categories'
 import { getBudget, setBudget } from '@/repositories/budgets'
@@ -94,6 +100,45 @@ describe('列表查询', () => {
     const keyword = await listTransactions({ keyword: '晚' })
     expect(keyword).toHaveLength(1)
     expect(keyword[0].amountCents).toBe(200)
+  })
+})
+
+describe('软删除与撤销', () => {
+  it('删除后不可见，撤销后恢复', async () => {
+    const accountId = await firstAccountId()
+    const categoryId = await firstExpenseCategoryId()
+    const transaction = await createTransaction({
+      kind: 'expense',
+      amountCents: 800,
+      categoryId,
+      accountId,
+      toAccountId: null,
+      date: '2026-11-21',
+      note: '测试'
+    })
+
+    await deleteTransaction(transaction.id)
+    expect(await listTransactions({})).toHaveLength(0)
+    expect(await getTransaction(transaction.id)).toBeUndefined()
+
+    await restoreTransaction(transaction.id)
+    expect(await listTransactions({})).toHaveLength(1)
+    expect((await getTransaction(transaction.id))?.amountCents).toBe(800)
+  })
+
+  it('只有回收站流水时账户可以删除', async () => {
+    const accountId = await firstAccountId()
+    const transaction = await createTransaction({
+      kind: 'expense',
+      amountCents: 500,
+      categoryId: await firstExpenseCategoryId(),
+      accountId,
+      toAccountId: null,
+      date: '2026-11-21',
+      note: ''
+    })
+    await deleteTransaction(transaction.id)
+    expect((await deleteAccount(accountId)).ok).toBe(true)
   })
 })
 

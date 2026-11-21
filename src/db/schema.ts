@@ -38,6 +38,8 @@ export interface Transaction {
   note: string
   createdAt: number
   updatedAt: number
+  /** 软删除时间；有值表示在回收站，不再参与统计、列表与备份 */
+  deletedAt?: number | null
 }
 
 export interface Budget {

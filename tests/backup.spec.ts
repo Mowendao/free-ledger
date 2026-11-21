@@ -2,10 +2,12 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { db } from '@/db/schema'
 import { resetDb } from '@/db/init'
 import { createTransaction } from '@/repositories/transactions'
+import { deleteTransaction } from '@/repositories/transactions'
 import { getSettings, setSetting } from '@/repositories/settings'
 import {
   buildBackup,
   buildCsv,
+  getDataStats,
   mergeWithBackup,
   parseBackup,
   replaceWithBackup,
@@ -87,6 +89,14 @@ describe('备份往返', () => {
     await setSetting('theme', 'light')
     await replaceWithBackup(backup)
     expect((await getSettings()).theme).toBe('dark')
+  })
+
+  it('回收站中的流水不进入备份与统计', async () => {
+    const id = await seedTransaction()
+    await deleteTransaction(id)
+    const backup = await buildBackup()
+    expect(backup.data.transactions).toHaveLength(0)
+    expect((await getDataStats()).transactions).toBe(0)
   })
 
   it('界面风格随备份恢复', async () => {

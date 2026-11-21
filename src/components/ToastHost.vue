@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { toasts } from '@/services/toast'
+import { runToastAction, toasts } from '@/services/toast'
 </script>
 
 <template>
@@ -11,7 +11,10 @@ import { toasts } from '@/services/toast'
         class="toast"
         :class="`toast--${item.type}`"
       >
-        {{ item.message }}
+        <span class="toast__message">{{ item.message }}</span>
+        <button v-if="item.action" class="toast__action" @click="runToastAction(item)">
+          {{ item.action.label }}
+        </button>
       </div>
     </TransitionGroup>
   </div>
