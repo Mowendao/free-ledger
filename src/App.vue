@@ -14,7 +14,7 @@ function applyTheme(): void {
     (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
   document.documentElement.dataset.theme = dark ? 'dark' : 'light'
   const meta = document.querySelector('meta[name="theme-color"]')
-  if (meta) meta.setAttribute('content', dark ? '#0d1117' : '#10b981')
+  if (meta) meta.setAttribute('content', dark ? '#16140f' : '#f5efe3')
 }
 
 watch(() => store.settings.theme, applyTheme, { immediate: true })

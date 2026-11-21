@@ -1,44 +1,74 @@
+/* 水墨账簿 · 设计令牌
+   纸：宣纸/茶纸底色；墨：正文与线条；朱砂：唯一强调色（印章、选中、支出）。
+   不使用渐变、不使用高饱和糖果色，全部颜色来自纸、墨、朱砂、黛青。 */
 :root {
   color-scheme: light;
-  --c-bg: #f5f6f8;
-  --c-surface: #ffffff;
-  --c-surface-2: #f0f2f5;
-  --c-text: #14171f;
-  --c-text-2: #5b6272;
-  --c-text-3: #9aa1ae;
-  --c-border: #e7e9ef;
-  --c-primary: #10b981;
-  --c-primary-strong: #0b8f66;
-  --c-primary-soft: rgba(16, 185, 129, 0.12);
-  --c-danger: #e5484d;
-  --c-danger-soft: rgba(229, 72, 77, 0.1);
-  --c-income: #0f9d76;
-  --c-expense: #e5484d;
-  --radius-sm: 10px;
-  --radius: 16px;
-  --radius-lg: 22px;
+
+  --c-paper: #f5efe3;
+  --c-bg: #f5efe3;
+  --c-surface: #fbf8f1;
+  --c-surface-2: #ece4d4;
+
+  --c-text: #201d18;
+  --c-text-2: #5b5548;
+  --c-text-3: #8d8474;
+  --c-line: #d8cfbd;
+  --c-line-strong: #b9ae99;
+
+  --c-seal: #a63a2e;
+  --c-seal-soft: rgba(166, 58, 46, 0.08);
+  --c-seal-ink: #f7f2e7;
+
+  --c-income: #2f5157;
+  --c-expense: #a63a2e;
+  --c-danger: #8f2f25;
+
+  --c-primary: #201d18;
+  --c-primary-strong: #a63a2e;
+  --c-primary-soft: rgba(166, 58, 46, 0.08);
+
+  --radius-sm: 2px;
+  --radius: 4px;
+  --radius-lg: 6px;
+
   --tabbar-h: 58px;
-  --shadow-1: 0 1px 2px rgba(16, 24, 40, 0.04), 0 6px 20px rgba(16, 24, 40, 0.05);
-  --shadow-2: 0 8px 30px rgba(16, 24, 40, 0.14);
-  --font: system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', 'Segoe UI', sans-serif;
+
+  --shadow-1: none;
+  --shadow-2: 0 8px 28px rgba(32, 29, 24, 0.16);
+
+  --font: 'Songti SC', 'STSong', 'Source Han Serif SC', 'Noto Serif CJK SC', 'SimSun',
+    'Times New Roman', serif;
+  --font-sans: system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+
+  --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
 }
 
 html[data-theme='dark'] {
   color-scheme: dark;
-  --c-bg: #0d1117;
-  --c-surface: #161b22;
-  --c-surface-2: #1f2630;
-  --c-text: #e8edf5;
-  --c-text-2: #9aa4b2;
-  --c-text-3: #6b7482;
-  --c-border: #262d38;
-  --c-primary: #34d399;
-  --c-primary-strong: #6ee7b7;
-  --c-primary-soft: rgba(52, 211, 153, 0.14);
-  --c-danger: #ff6b6b;
-  --c-danger-soft: rgba(255, 107, 107, 0.12);
-  --c-income: #34d399;
-  --c-expense: #ff7b7b;
-  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-2: 0 12px 40px rgba(0, 0, 0, 0.5);
+
+  --c-paper: #16140f;
+  --c-bg: #16140f;
+  --c-surface: #1e1b15;
+  --c-surface-2: #272219;
+
+  --c-text: #e9e2d3;
+  --c-text-2: #b3a992;
+  --c-text-3: #837a68;
+  --c-line: #332c21;
+  --c-line-strong: #4a4132;
+
+  --c-seal: #c9674f;
+  --c-seal-soft: rgba(201, 103, 79, 0.14);
+  --c-seal-ink: #1a1712;
+
+  --c-income: #7fa8a3;
+  --c-expense: #d98a74;
+  --c-danger: #e0796a;
+
+  --c-primary: #e9e2d3;
+  --c-primary-strong: #d98a74;
+  --c-primary-soft: rgba(201, 103, 79, 0.12);
+
+  --shadow-1: none;
+  --shadow-2: 0 10px 36px rgba(0, 0, 0, 0.55);
 }

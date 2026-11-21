@@ -68,7 +68,7 @@ describe('应用冒烟', () => {
     const wrapper = await mountApp()
     await router.push('/me')
     await flushPromises()
-    expect(wrapper.text()).toContain('开源 · 无广告 · 数据只存本机')
+    expect(wrapper.text()).toContain('一纸账本，只属于你')
     expect(wrapper.text()).toContain('关于 Free Ledger')
   })
 })

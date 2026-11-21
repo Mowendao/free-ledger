@@ -9,10 +9,10 @@ import { version } from '../../package.json'
     <PageHeader title="关于 Free Ledger" />
 
     <section class="about-hero">
-      <div class="profile-hero__logo">F</div>
+      <div class="profile-hero__logo">账</div>
       <h1 class="about-hero__name">Free Ledger</h1>
       <p class="about-hero__version">v{{ version }} · MIT License</p>
-      <p class="about-hero__tag">免费、自由、属于你自己的记账本</p>
+      <p class="about-hero__tag">一纸账本，只属于你</p>
     </section>
 
     <section class="card">

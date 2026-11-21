@@ -49,10 +49,10 @@ async function setCurrency(value: string): Promise<void> {
 <template>
   <div class="page">
     <section class="profile-hero">
-      <div class="profile-hero__logo">F</div>
+      <div class="profile-hero__logo">账</div>
       <div class="profile-hero__main">
         <h1 class="profile-hero__name">Free Ledger</h1>
-        <p class="profile-hero__tag">开源 · 无广告 · 数据只存本机</p>
+        <p class="profile-hero__tag">一纸账本，只属于你</p>
       </div>
       <span class="profile-hero__version">v{{ appVersion }}</span>
     </section>

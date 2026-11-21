@@ -219,6 +219,7 @@ function pickToAccount(account: Account): void {
         <span class="amount-card__currency">{{ currency }}</span>
         <span class="amount-card__number" :class="{ 'is-zero': amountCents === 0 }">{{ amount }}</span>
       </div>
+      <span class="seal" aria-hidden="true">记</span>
     </section>
 
     <div class="account-row">

@@ -35,7 +35,7 @@ const donut = computed(() => {
     }
   })
   if (rest > 0) {
-    items.push({ label: '其他分类', color: '#cbd5e1', value: rest, share: percent(rest, total) })
+    items.push({ label: '其他分类', color: '#8a8478', value: rest, share: percent(rest, total) })
   }
   return { items, total }
 })

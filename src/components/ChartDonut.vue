@@ -31,7 +31,7 @@ const segments = computed(() => {
 <template>
   <div class="donut">
     <svg class="donut__svg" viewBox="0 0 140 140" role="img" aria-label="分类占比">
-      <circle cx="70" cy="70" :r="R" fill="none" stroke="var(--c-surface-2)" stroke-width="18" />
+      <circle cx="70" cy="70" :r="R" fill="none" stroke="var(--c-line)" stroke-width="12" />
       <circle
         v-for="(segment, index) in segments"
         :key="index"
@@ -40,7 +40,7 @@ const segments = computed(() => {
         :r="R"
         fill="none"
         :stroke="segment.color"
-        stroke-width="18"
+        stroke-width="12"
         :stroke-dasharray="segment.dasharray"
         :stroke-dashoffset="segment.dashoffset"
         transform="rotate(-90 70 70)"
