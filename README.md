@@ -1,6 +1,7 @@
 # Free Ledger · 自由记账
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-10b981.svg)](LICENSE)
+[![Live Demo](https://img.shields.io/badge/demo-online-10b981.svg)](https://mowendao.github.io/free-ledger/)
 [![PWA](https://img.shields.io/badge/PWA-offline--ready-0ea5e9.svg)](https://web.dev/progressive-web-apps/)
 [![No Ads](https://img.shields.io/badge/ads-none-ef4444.svg)](#隐私承诺)
 [![No Cloud](https://img.shields.io/badge/cloud-never-8b5cf6.svg)](#隐私承诺)
@@ -47,6 +48,8 @@
 > 请定期在「我的 → 数据备份与导出」中导出 JSON 备份，并保存到自己的网盘或移动硬盘。
 
 ## 快速开始
+
+**在线体验**：<https://mowendao.github.io/free-ledger/>（手机浏览器打开可添加到主屏幕）
 
 环境要求：Node.js ≥ 20.19（推荐 22 / 24）。
 
