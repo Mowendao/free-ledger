@@ -2,6 +2,19 @@
 
 本项目遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## [0.6.0] - 2026-11-21
+
+### 新增
+
+- 界面风格改为折叠面板：默认收起，标题显示当前风格，点击展开选择。
+- 工程化：ESLint（TypeScript + Vue）与 Playwright E2E（记账、主题折叠、Esc 关闭弹层）。
+- CI 增加 lint 与 E2E 步骤；发布 v0.6.0 tag 与 GitHub Release。
+
+### 改进
+
+- 提高各主题次要文字对比度（约 4.5:1），小字更清晰。
+- 触控热区：主要按钮 44px、图标按钮 40px、标签 34px；补充统一键盘焦点环。
+
 ## [0.5.0] - 2026-11-21
 
 ### 新增

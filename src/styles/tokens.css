@@ -490,3 +490,20 @@ html[data-theme='dark'][data-skin='terminal'] {
     transparent 1px 3px
   );
 }
+
+/* 对比度修正：次要文字提升到约 4.5:1 以上 */
+html[data-theme='light'][data-skin='ink'] { --c-text-3: #6f6658; }
+html[data-theme='light'][data-skin='mono'] { --c-text-3: #6b6b6b; }
+html[data-theme='light'][data-skin='celadon'] { --c-text-3: #5e6f65; }
+html[data-theme='light'][data-skin='kraft'] { --c-text-3: #6b5c45; }
+html[data-theme='light'][data-skin='rose'] { --c-text-3: #74615a; }
+html[data-theme='light'][data-skin='olive'] { --c-text-3: #63684b; }
+html[data-theme='light'][data-skin='terminal'] { --c-text-3: #566b5c; }
+
+html[data-theme='dark'] { --c-text-3: #9a907c; }
+html[data-theme='dark'][data-skin='mono'] { --c-text-3: #8a8a8a; }
+html[data-theme='dark'][data-skin='celadon'] { --c-text-3: #8fa197; }
+html[data-theme='dark'][data-skin='kraft'] { --c-text-3: #a4937a; }
+html[data-theme='dark'][data-skin='rose'] { --c-text-3: #a8908a; }
+html[data-theme='dark'][data-skin='olive'] { --c-text-3: #a3a586; }
+html[data-theme='dark'][data-skin='terminal'] { --c-text-3: #6f9a7d; }

@@ -2,6 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-10b981.svg)](LICENSE)
 [![Live Demo](https://img.shields.io/badge/demo-online-10b981.svg)](https://mowendao.github.io/free-ledger/)
+[![Deploy](https://github.com/Mowendao/free-ledger/actions/workflows/deploy.yml/badge.svg)](https://github.com/Mowendao/free-ledger/actions/workflows/deploy.yml)
 [![PWA](https://img.shields.io/badge/PWA-offline--ready-0ea5e9.svg)](https://web.dev/progressive-web-apps/)
 [![No Ads](https://img.shields.io/badge/ads-none-ef4444.svg)](#隐私承诺)
 [![No Cloud](https://img.shields.io/badge/cloud-never-8b5cf6.svg)](#隐私承诺)
@@ -24,7 +25,7 @@
 - **离线可用**：PWA 安装到主屏幕，断网也能完整使用。
 - **深色模式**：浅色 / 深色 / 跟随系统。
 - **零外部依赖请求**：不加载 CDN、字体、统计脚本，生产构建注入 CSP。
-- **七种界面风格**：宣纸账簿 / 墨白 / 青瓷 / 牛皮纸 / 莫兰迪粉 / 绿皮火车 / 终端，随时切换并跟随备份迁移。
+- **七种界面风格**：宣纸账簿 / 墨白 / 青瓷 / 牛皮纸 / 莫兰迪粉 / 绿皮火车 / 终端；折叠面板按需展开，选择随备份迁移。
 
 ## 界面预览
 
@@ -90,7 +91,9 @@ npm install
 npm run dev        # 开发服务器 http://localhost:5173
 npm run build      # 生产构建，输出到 dist/
 npm run preview    # 本地预览生产构建
-npm test           # 运行 Vitest 测试
+npm test           # Vitest 单元 / 组件测试
+npm run lint       # ESLint
+npm run test:e2e   # Playwright E2E（需先 build）
 npm run typecheck  # vue-tsc 类型检查
 ```
 
@@ -163,6 +166,7 @@ PWA 需要 **HTTPS**（或 localhost）才能注册 Service Worker 并安装：
 │  ├─ pages/               # 页面
 │  └─ styles/              # 设计令牌与基础样式
 ├─ tests/                  # Vitest 单元 / 组件 / 冒烟测试
+├─ e2e/                    # Playwright 端到端测试
 ├─ public/                 # 图标与静态资源
 ├─ docs/                   # 架构、数据模型、隐私说明
 └─ .github/workflows/      # CI 与 Pages 部署
@@ -174,7 +178,7 @@ PWA 需要 **HTTPS**（或 localhost）才能注册 Service Worker 并安装：
 ## 技术栈
 
 Vue 3 · TypeScript · Vite 7 · vue-router（hash）· Pinia · Dexie 4（IndexedDB）·
-vite-plugin-pwa · Vitest + jsdom。样式为手写 CSS 设计令牌，图表为自制 SVG，不引入 UI 库与图表库。
+vite-plugin-pwa · Vitest + jsdom · ESLint · Playwright。样式为手写 CSS 设计令牌，图表为自制 SVG，不引入 UI 库与图表库。
 
 ## 路线图
 

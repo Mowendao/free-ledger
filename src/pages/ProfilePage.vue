@@ -16,6 +16,11 @@ const router = useRouter()
 const appVersion = version
 const currency = computed(() => store.settings.currency)
 const deletedCount = ref(0)
+const skinOpen = ref(false)
+
+const currentSkin = computed(
+  () => SKINS.find((skin) => skin.id === store.settings.skin) ?? SKINS[0]
+)
 
 onMounted(async () => {
   deletedCount.value = await countDeletedTransactions()
@@ -148,8 +153,19 @@ async function setCurrency(value: string): Promise<void> {
     </section>
 
     <section class="card">
-      <h2 class="card-title">界面风格</h2>
-      <div class="skin-grid">
+      <button
+        class="collapse-head"
+        type="button"
+        :aria-expanded="skinOpen"
+        @click="skinOpen = !skinOpen"
+      >
+        <span class="collapse-head__title">界面风格</span>
+        <span class="collapse-head__meta">
+          {{ currentSkin.name }}
+          <AppIcon :name="skinOpen ? 'chevron-down' : 'chevron-right'" :size="15" />
+        </span>
+      </button>
+      <div v-if="skinOpen" class="skin-grid collapse-body">
         <button
           v-for="skin in SKINS"
           :key="skin.id"

@@ -80,9 +80,13 @@ describe('应用冒烟', () => {
     expect(wrapper.text()).toContain('回收站是空的')
   })
 
-  it('可以切换界面风格并持久化', async () => {
+  it('界面风格默认折叠，可展开切换并持久化', async () => {
     const wrapper = await mountApp()
     await router.push('/me')
+    await flushPromises()
+
+    expect(wrapper.findAll('.skin-card')).toHaveLength(0)
+    await wrapper.get('.collapse-head').trigger('click')
     await flushPromises()
 
     const cards = wrapper.findAll('.skin-card')

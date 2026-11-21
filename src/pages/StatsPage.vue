@@ -9,7 +9,6 @@ import MonthSwitcher from '@/components/MonthSwitcher.vue'
 import ChartDonut from '@/components/ChartDonut.vue'
 import ChartBars from '@/components/ChartBars.vue'
 import EmptyState from '@/components/EmptyState.vue'
-import AppIcon from '@/components/AppIcon.vue'
 
 const store = useLedgerStore()
 

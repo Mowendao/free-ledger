@@ -5,6 +5,8 @@ dist-ssr/
 coverage/
 *.local
 .vite/
+playwright-report/
+test-results/
 
 # ---- 工作区交付物（截图、构建包、APK 等）----
 _产出/

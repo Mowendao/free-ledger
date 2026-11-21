@@ -30,13 +30,22 @@ jobs:
       - name: Install
         run: npm ci
 
+      - name: Lint
+        run: npm run lint
+
       - name: Typecheck
         run: npm run typecheck
 
       - name: Test
         run: npm test
 
-      - name: Build
+      - name: Build (test)
+        run: npm run build
+
+      - name: E2E
+        run: npm run test:e2e
+
+      - name: Build for GitHub Pages
         run: npm run build
         env:
           BASE_URL: /free-ledger/
