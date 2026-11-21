@@ -137,6 +137,7 @@ export function parseWechatRows(rows: string[][], accountId: string): WechatBill
 
   const headerIndex = rows.findIndex(
     (cells) =>
+      Array.isArray(cells) &&
       cells.some((cell) => (cell ?? '').trim() === '交易时间') &&
       cells.some((cell) => (cell ?? '').includes('金额'))
   )
@@ -183,7 +184,7 @@ export function parseWechatRows(rows: string[][], accountId: string): WechatBill
     const amountText = read(index.amount)
     if (!time && !direction && !amountText) continue
 
-    if (direction === '不计收支') {
+    if (direction === '不计收支' || direction === '/') {
       stats.skipped += 1
       continue
     }
@@ -274,7 +275,12 @@ function parseSheetXml(xml: string, sharedStrings: string[]): string[][] {
     matrix[rowIndex - 1] = cells
   }
 
-  return matrix.map((row) => row ?? [])
+  // xlsx 的行号可能不连续（空行不写），转成稠密数组，避免下游拿到 undefined
+  const dense: string[][] = []
+  for (let index = 0; index < matrix.length; index += 1) {
+    dense.push(matrix[index] ?? [])
+  }
+  return dense
 }
 
 function extractCell(

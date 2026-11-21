@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { strToU8, zipSync } from 'fflate'
-import { isXlsxFile, parseCsv, parseWechatBill, parseWechatFile } from '@/services/wechat'
+import { isXlsxFile, parseCsv, parseWechatBill, parseWechatFile, parseWechatWorkbook } from '@/services/wechat'
 
 const HEADER =
   '交易时间,交易类型,交易对方,商品,收/支,金额(元),支付方式,当前状态,交易单号,商户单号,备注'
@@ -13,6 +13,7 @@ const BILL = [
   '2026-11-21 12:30:00,商户消费,便利店,矿泉水,支出,¥3.50,零钱,支付成功,4200001,1001,',
   '2026-11-20 09:00:00,转账,张三,转账,收入,¥50.00,零钱,已收钱,4200002,1002,还款',
   '2026-11-19 08:00:00,零钱提现,提现,提现,不计收支,¥100.00,零钱,提现成功,4200003,1003,',
+  '2026-11-17 08:00:00,零钱提现,提现,提现,/,¥100.00,零钱,提现成功,4200005,1005,',
   '2026-11-18 08:00:00,商户消费,"便利店, 24h",咖啡,支出,"¥12.30",零钱,支付成功,4200004,1004,"加班, 提神"'
 ].join('\n')
 
@@ -25,7 +26,7 @@ describe('微信账单解析', () => {
     expect(stats.incomeCount).toBe(1)
     expect(stats.expenseCents).toBe(1580)
     expect(stats.incomeCents).toBe(5000)
-    expect(stats.skipped).toBe(1)
+    expect(stats.skipped).toBe(2)
     expect(transactions.every((tx) => tx.categoryId === null)).toBe(true)
     expect(transactions.every((tx) => tx.accountId === 'acc-1')).toBe(true)
     expect(transactions.every((tx) => tx.deletedAt === null)).toBe(true)
@@ -188,5 +189,50 @@ describe('xlsx 账单', () => {
     expect(transactions).toHaveLength(1)
     expect(transactions[0].amountCents).toBe(1200)
     expect(transactions[0].id).toBe('wx-4200009')
+  })
+
+  it('行号不连续时也能解析（空行不写入）', () => {
+    const rowXml = (rowNumber: number, cells: string[]): string =>
+      `<row r="${rowNumber}">${cells
+        .map(
+          (value, column) =>
+            `<c r="${columnName(column)}${rowNumber}" t="inlineStr"><is><t>${escapeXml(
+              value
+            )}</t></is></c>`
+        )
+        .join('')}</row>`
+
+    const sheet = `<worksheet><sheetData>
+      ${rowXml(1, ['微信支付账单明细'])}
+      ${rowXml(4, ['交易时间', '金额(元)', '收/支', '交易单号'])}
+      ${rowXml(5, ['2026-11-21 12:30:00', '12.00', '支出', '4200001'])}
+    </sheetData></worksheet>`
+    const buffer = toBuffer(zipSync({ 'xl/worksheets/sheet1.xml': strToU8(sheet) }))
+
+    const { transactions } = parseWechatWorkbook(buffer, 'acc')
+    expect(transactions).toHaveLength(1)
+    expect(transactions[0].date).toBe('2026-11-21')
+  })
+
+  it('支持 Excel 日期序列号', () => {
+    const serial = (Date.UTC(2026, 10, 21) - Date.UTC(1899, 11, 30)) / 86400000
+    const header = ['交易时间', '金额(元)', '收/支', '交易单号']
+      .map(
+        (value, column) =>
+          `<c r="${columnName(column)}1" t="inlineStr"><is><t>${value}</t></is></c>`
+      )
+      .join('')
+    const data = [
+      `<c r="A2"><v>${serial}</v></c>`,
+      '<c r="B2"><v>12.5</v></c>',
+      '<c r="C2" t="inlineStr"><is><t>支出</t></is></c>',
+      '<c r="D2" t="inlineStr"><is><t>4200005</t></is></c>'
+    ].join('')
+    const sheet = `<worksheet><sheetData><row r="1">${header}</row><row r="2">${data}</row></sheetData></worksheet>`
+    const buffer = toBuffer(zipSync({ 'xl/worksheets/sheet1.xml': strToU8(sheet) }))
+
+    const { transactions } = parseWechatWorkbook(buffer, 'acc')
+    expect(transactions[0].date).toBe('2026-11-21')
+    expect(transactions[0].amountCents).toBe(1250)
   })
 })

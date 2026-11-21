@@ -2,6 +2,13 @@
 
 本项目遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## [0.8.2] - 2026-11-21
+
+### 修复
+
+- 微信 xlsx 账单在空行导致行号不连续时崩溃（`Cannot read properties of undefined`）；解析结果改为稠密行。
+- 微信账单用「/」表示「不计收支」（提现、还款等）时正确跳过，不再计为无效记录。
+
 ## [0.8.1] - 2026-11-21
 
 ### 修复
