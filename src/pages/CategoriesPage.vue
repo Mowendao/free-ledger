@@ -2,7 +2,12 @@
 import { computed, reactive, ref } from 'vue'
 import type { Category, CategoryKind } from '@/db/schema'
 import { useLedgerStore } from '@/stores/useLedger'
-import { createCategory, deleteCategory, updateCategory } from '@/repositories/categories'
+import {
+  countCategoryUsage,
+  createCategory,
+  deleteCategory,
+  updateCategory
+} from '@/repositories/categories'
 import { toast } from '@/services/toast'
 import { confirmDialog } from '@/services/confirm'
 import PageHeader from '@/components/PageHeader.vue'
@@ -15,6 +20,22 @@ const kind = ref<CategoryKind>('expense')
 const sheetOpen = ref(false)
 const editingId = ref<string | null>(null)
 const saving = ref(false)
+
+const migrationOpen = ref(false)
+const migratingCategory = ref<Category | null>(null)
+const migrationUsage = ref(0)
+const migrationTargetId = ref('')
+const migrating = ref(false)
+
+const migrationTargets = computed(() =>
+  migratingCategory.value
+    ? store.categories.filter(
+        (category) =>
+          category.kind === migratingCategory.value!.kind &&
+          category.id !== migratingCategory.value!.id
+      )
+    : []
+)
 
 const form = reactive({
   name: '',
@@ -80,14 +101,31 @@ async function save(): Promise<void> {
 
 async function remove(): Promise<void> {
   if (!editingId.value) return
+  const category = store.categories.find((item) => item.id === editingId.value)
+  if (!category) return
+  if (category.builtin) {
+    toast('内置分类不可删除', 'error')
+    return
+  }
+
+  const usage = await countCategoryUsage(category.id)
+  if (usage > 0) {
+    migratingCategory.value = category
+    migrationUsage.value = usage
+    migrationTargetId.value = ''
+    sheetOpen.value = false
+    migrationOpen.value = true
+    return
+  }
+
   const ok = await confirmDialog({
     title: '删除分类？',
-    message: '内置分类和被流水引用的分类不能删除。',
+    message: '该分类没有流水，删除后不可恢复。',
     confirmText: '删除',
     danger: true
   })
   if (!ok) return
-  const result = await deleteCategory(editingId.value)
+  const result = await deleteCategory(category.id)
   if (!result.ok) {
     toast(result.reason ?? '无法删除', 'error')
     return
@@ -95,6 +133,23 @@ async function remove(): Promise<void> {
   await store.reloadBasics()
   sheetOpen.value = false
   toast('分类已删除')
+}
+
+async function confirmMigration(): Promise<void> {
+  if (!migratingCategory.value || !migrationTargetId.value) return
+  migrating.value = true
+  try {
+    const result = await deleteCategory(migratingCategory.value.id, migrationTargetId.value)
+    if (!result.ok) {
+      toast(result.reason ?? '迁移失败', 'error')
+      return
+    }
+    await store.reloadBasics()
+    migrationOpen.value = false
+    toast(`已迁移 ${migrationUsage.value} 笔流水并删除分类`)
+  } finally {
+    migrating.value = false
+  }
 }
 </script>
 
@@ -188,6 +243,54 @@ async function remove(): Promise<void> {
       <div class="form__actions">
         <button v-if="editingId" class="btn btn--danger" @click="remove">删除</button>
         <button class="btn btn--primary form__grow" :disabled="saving" @click="save">保存</button>
+      </div>
+    </div>
+  </SheetModal>
+
+  <SheetModal
+    :open="migrationOpen"
+    title="迁移并删除分类"
+    @close="migrationOpen = false"
+  >
+    <div class="form">
+      <p class="paragraph">
+        「{{ migratingCategory?.name }}」有 {{ migrationUsage }} 笔流水。选择要迁移到的分类，迁移后原分类会被删除。
+      </p>
+
+      <div class="list migration-list">
+        <button
+          v-for="option in migrationTargets"
+          :key="option.id"
+          class="row"
+          @click="migrationTargetId = option.id"
+        >
+          <span
+            class="bubble"
+            :style="{ background: `${option.color}1f`, color: option.color }"
+          >
+            <AppIcon :name="option.icon" :size="18" />
+          </span>
+          <span class="row__main">
+            <span class="row__title">{{ option.name }}</span>
+          </span>
+          <AppIcon
+            v-if="migrationTargetId === option.id"
+            name="check"
+            :size="18"
+            class="text-primary"
+          />
+        </button>
+      </div>
+
+      <div class="form__actions">
+        <button class="btn" @click="migrationOpen = false">取消</button>
+        <button
+          class="btn btn--danger form__grow"
+          :disabled="!migrationTargetId || migrating"
+          @click="confirmMigration"
+        >
+          {{ migrating ? '迁移中…' : '迁移并删除' }}
+        </button>
       </div>
     </div>
   </SheetModal>

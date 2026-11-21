@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import type { Transaction } from '@/db/schema'
 import { useLedgerStore } from '@/stores/useLedger'
-import { formatCents } from '@/services/money'
+import { listAllTransactions } from '@/repositories/transactions'
+import { formatCents, parseCents } from '@/services/money'
 import { dateLabel } from '@/services/dates'
 import { summarize } from '@/services/stats'
+import { filterTransactions } from '@/services/search'
 import { accountIcon } from '@/services/accountMeta'
 import AppIcon from '@/components/AppIcon.vue'
 import MonthSwitcher from '@/components/MonthSwitcher.vue'
@@ -20,25 +22,54 @@ const kindFilter = ref<'all' | 'expense' | 'income'>('all')
 const categoryFilter = ref<string | null>(null)
 const accountFilter = ref('')
 const keyword = ref('')
+const amountMin = ref('')
+const amountMax = ref('')
 const searchOpen = ref(false)
 const filterOpen = ref(false)
 
+const allTransactions = ref<Transaction[]>([])
+
 const currency = computed(() => store.settings.currency)
-const summary = computed(() => summarize(store.transactions))
+const monthSummary = computed(() => summarize(store.transactions))
+
+function toCents(value: string): number | null {
+  if (!value.trim()) return null
+  const cents = parseCents(value)
+  return cents > 0 ? cents : null
+}
+
+const minCents = computed(() => toCents(amountMin.value))
+const maxCents = computed(() => toCents(amountMax.value))
+
+const searchActive = computed(
+  () =>
+    keyword.value.trim() !== '' || minCents.value !== null || maxCents.value !== null
+)
 
 const filtered = computed(() => {
-  const kw = keyword.value.trim().toLowerCase()
-  return store.transactions.filter((tx) => {
-    if (kindFilter.value !== 'all' && tx.kind !== kindFilter.value) return false
-    if (categoryFilter.value && tx.categoryId !== categoryFilter.value) return false
-    if (accountFilter.value && tx.accountId !== accountFilter.value) return false
-    if (kw && !tx.note.toLowerCase().includes(kw)) return false
-    return true
-  })
+  const source = searchActive.value ? allTransactions.value : store.transactions
+  return filterTransactions(
+    source,
+    {
+      keyword: searchActive.value ? keyword.value : '',
+      minCents: searchActive.value ? minCents.value : null,
+      maxCents: searchActive.value ? maxCents.value : null,
+      kind: kindFilter.value,
+      categoryId: categoryFilter.value,
+      accountId: accountFilter.value
+    },
+    store.categories,
+    store.accounts
+  )
 })
 
+const resultSummary = computed(() => summarize(filtered.value))
+
 const filterCount = computed(
-  () => (categoryFilter.value ? 1 : 0) + (accountFilter.value ? 1 : 0)
+  () =>
+    (categoryFilter.value ? 1 : 0) +
+    (accountFilter.value ? 1 : 0) +
+    (minCents.value !== null || maxCents.value !== null ? 1 : 0)
 )
 
 interface DayGroup {
@@ -72,6 +103,13 @@ const groups = computed<DayGroup[]>(() => {
     })
 })
 
+async function loadAll(): Promise<void> {
+  allTransactions.value = await listAllTransactions()
+}
+
+onMounted(loadAll)
+watch(() => store.transactions, loadAll)
+
 function toggleSearch(): void {
   searchOpen.value = !searchOpen.value
   if (!searchOpen.value) keyword.value = ''
@@ -80,6 +118,8 @@ function toggleSearch(): void {
 function resetFilters(): void {
   categoryFilter.value = null
   accountFilter.value = ''
+  amountMin.value = ''
+  amountMax.value = ''
 }
 
 function openTx(transaction: Transaction): void {
@@ -89,23 +129,33 @@ function openTx(transaction: Transaction): void {
 
 <template>
   <div class="page">
-    <MonthSwitcher :month="store.month" @update:month="store.setMonth" />
+    <MonthSwitcher v-if="!searchActive" :month="store.month" @update:month="store.setMonth" />
 
-    <section class="summary-card">
+    <section v-if="!searchActive" class="summary-card">
       <div class="summary-card__item">
         <span class="summary-card__label">收入</span>
-        <span class="summary-card__value text-income">{{ currency }}{{ formatCents(summary.income) }}</span>
+        <span class="summary-card__value text-income">{{ currency }}{{ formatCents(monthSummary.income) }}</span>
       </div>
       <div class="summary-card__divider" />
       <div class="summary-card__item">
         <span class="summary-card__label">支出</span>
-        <span class="summary-card__value text-expense">{{ currency }}{{ formatCents(summary.expense) }}</span>
+        <span class="summary-card__value text-expense">{{ currency }}{{ formatCents(monthSummary.expense) }}</span>
       </div>
       <div class="summary-card__divider" />
       <div class="summary-card__item">
         <span class="summary-card__label">结余</span>
-        <span class="summary-card__value">{{ currency }}{{ formatCents(summary.net) }}</span>
+        <span class="summary-card__value">{{ currency }}{{ formatCents(monthSummary.net) }}</span>
       </div>
+    </section>
+
+    <section v-else class="search-summary">
+      <span class="search-summary__title">全时段</span>
+      <span>{{ filtered.length }} 条</span>
+      <span class="text-income">收 {{ currency }}{{ formatCents(resultSummary.income) }}</span>
+      <span class="text-expense">支 {{ currency }}{{ formatCents(resultSummary.expense) }}</span>
+      <button v-if="filterCount > 0" class="link search-summary__clear" @click="resetFilters">
+        清除筛选
+      </button>
     </section>
 
     <div class="toolbar">
@@ -136,13 +186,18 @@ function openTx(transaction: Transaction): void {
 
     <label v-if="searchOpen" class="search-field">
       <AppIcon name="search" :size="16" />
-      <input v-model="keyword" class="search-field__input" placeholder="搜索本月备注" autofocus />
+      <input
+        v-model="keyword"
+        class="search-field__input"
+        placeholder="搜索备注 / 分类 / 账户 / 金额"
+        autofocus
+      />
       <button v-if="keyword" class="search-field__clear" aria-label="清空" @click="keyword = ''">
         <AppIcon name="close" :size="14" />
       </button>
     </label>
 
-    <div v-if="filterCount > 0" class="filter-note">
+    <div v-if="filterCount > 0 && !searchActive" class="filter-note">
       <span>已筛选 {{ filtered.length }} 条</span>
       <button class="link" @click="resetFilters">清除筛选</button>
     </div>
@@ -172,13 +227,20 @@ function openTx(transaction: Transaction): void {
     <EmptyState
       v-if="groups.length === 0"
       icon="list"
-      title="本月还没有记录"
-      text="去「记账」页记下第一笔吧"
+      :title="searchActive ? '没有匹配的记录' : '本月还没有记录'"
+      :text="searchActive ? '换个关键词或放宽金额区间试试' : '去「记账」页记下第一笔吧'"
     />
   </div>
 
   <SheetModal :open="filterOpen" title="筛选" @close="filterOpen = false">
     <div class="filter-sheet">
+      <p class="section-title">金额区间（元）</p>
+      <div class="amount-range">
+        <input v-model="amountMin" class="input" inputmode="decimal" placeholder="最低" />
+        <span class="amount-range__dash">—</span>
+        <input v-model="amountMax" class="input" inputmode="decimal" placeholder="最高" />
+      </div>
+
       <p class="section-title">分类</p>
       <div class="filter-grid">
         <button

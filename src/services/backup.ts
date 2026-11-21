@@ -159,8 +159,13 @@ export function parseBackup(text: string): BackupFile {
   }
   if (!isRecord(json)) throw new Error('备份文件结构不正确')
   if (json.app !== BACKUP_APP) throw new Error('不是 Free Ledger 的备份文件')
-  if (typeof json.schemaVersion !== 'number' || json.schemaVersion > BACKUP_SCHEMA_VERSION) {
-    throw new Error('备份版本高于当前应用，请升级后再导入')
+  if (
+    typeof json.schemaVersion !== 'number' ||
+    !Number.isInteger(json.schemaVersion) ||
+    json.schemaVersion < 1 ||
+    json.schemaVersion > BACKUP_SCHEMA_VERSION
+  ) {
+    throw new Error('备份版本不受支持，请使用当前版本导出的备份')
   }
   if (!isRecord(json.data)) throw new Error('备份数据缺失')
 
@@ -171,16 +176,32 @@ export function parseBackup(text: string): BackupFile {
   const budgets = Array.isArray(data.budgets) ? data.budgets : []
   const settings = Array.isArray(data.settings) ? data.settings : []
 
-  const parsedAccounts = accounts.map(parseAccount)
-  const parsedCategories = categories.map(parseCategory)
-  const parsedTransactions = transactions.map(parseTransaction)
-  const parsedBudgets = budgets.map(parseBudget)
-  const parsedSettings = settings.map(parseSetting)
+  const parsedAccounts = collect(accounts, parseAccount, '账户')
+  const parsedCategories = collect(categories, parseCategory, '分类')
+  const parsedTransactions = collect(transactions, parseTransaction, '流水')
+  const parsedBudgets = collect(budgets, parseBudget, '预算')
+  const parsedSettings = collect(settings, parseSetting, '设置')
 
-  const accountIds = new Set(parsedAccounts.map((a) => a.id))
-  for (const tx of parsedTransactions) {
-    if (!accountIds.has(tx.accountId)) {
-      throw new Error(`流水 ${tx.id} 引用了不存在的账户`)
+  const uniqueAccounts = dedupeById(parsedAccounts)
+  const uniqueCategories = dedupeById(parsedCategories)
+  const uniqueTransactions = dedupeById(parsedTransactions)
+  const uniqueBudgets = dedupeById(parsedBudgets)
+  const uniqueSettings = dedupeByKey(parsedSettings)
+
+  const accountIds = new Set(uniqueAccounts.map((account) => account.id))
+  const categoryIds = new Set(uniqueCategories.map((category) => category.id))
+
+  for (const transaction of uniqueTransactions) {
+    if (!accountIds.has(transaction.accountId)) {
+      throw new Error(`流水 ${transaction.id} 引用了不存在的账户`)
+    }
+    if (transaction.categoryId && !categoryIds.has(transaction.categoryId)) {
+      throw new Error(`流水 ${transaction.id} 引用了不存在的分类`)
+    }
+  }
+  for (const budget of uniqueBudgets) {
+    if (budget.categoryId && !categoryIds.has(budget.categoryId)) {
+      throw new Error(`预算 ${budget.id} 引用了不存在的分类`)
     }
   }
 
@@ -189,24 +210,66 @@ export function parseBackup(text: string): BackupFile {
     schemaVersion: json.schemaVersion,
     exportedAt: typeof json.exportedAt === 'string' ? json.exportedAt : new Date().toISOString(),
     data: {
-      accounts: parsedAccounts,
-      categories: parsedCategories,
-      transactions: parsedTransactions,
-      budgets: parsedBudgets,
-      settings: parsedSettings
+      accounts: uniqueAccounts,
+      categories: uniqueCategories,
+      transactions: uniqueTransactions,
+      budgets: uniqueBudgets,
+      settings: uniqueSettings
     }
   }
 }
 
-function dedupeById<T extends { id: string }>(rows: T[]): T[] {
+/** 逐条解析并汇总错误，避免只报第一条就中断。 */
+function collect<T>(
+  items: unknown[],
+  parser: (raw: unknown, index: number) => T,
+  label: string
+): T[] {
+  const results: T[] = []
+  const errors: string[] = []
+
+  items.forEach((raw, index) => {
+    try {
+      results.push(parser(raw, index))
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      errors.push(`${label}：${message}`)
+    }
+  })
+
+  if (errors.length > 0) {
+    const head = errors.slice(0, 3).join('；')
+    const rest = errors.length > 3 ? `；另有 ${errors.length - 3} 处错误` : ''
+    throw new Error(`备份有 ${errors.length} 处错误：${head}${rest}`)
+  }
+
+  return results
+}
+
+function dedupeById<T extends { id: string; updatedAt?: number }>(rows: T[]): T[] {
   const map = new Map<string, T>()
-  for (const row of rows) map.set(row.id, row)
+  for (const row of rows) {
+    const existing = map.get(row.id)
+    if (!existing || (row.updatedAt ?? 0) >= (existing.updatedAt ?? 0)) map.set(row.id, row)
+  }
+  return [...map.values()]
+}
+
+function dedupeByKey(rows: Setting[]): Setting[] {
+  const map = new Map<string, Setting>()
+  for (const row of rows) map.set(row.key, row)
   return [...map.values()]
 }
 
 /** 覆盖导入：清空现有数据后整体恢复。 */
 export async function replaceWithBackup(backup: BackupFile): Promise<ImportResult> {
   const data = backup.data
+  const accounts = dedupeById(data.accounts)
+  const categories = dedupeById(data.categories)
+  const transactions = dedupeById(data.transactions)
+  const budgets = dedupeById(data.budgets)
+  const settings = dedupeByKey(data.settings)
+
   await db.transaction(
     'rw',
     [db.accounts, db.categories, db.transactions, db.budgets, db.settings],
@@ -216,15 +279,15 @@ export async function replaceWithBackup(backup: BackupFile): Promise<ImportResul
       await db.accounts.clear()
       await db.categories.clear()
       await db.settings.clear()
-      await db.accounts.bulkAdd(data.accounts)
-      await db.categories.bulkAdd(data.categories)
-      await db.transactions.bulkAdd(data.transactions)
-      await db.budgets.bulkAdd(data.budgets)
-      await db.settings.bulkAdd(data.settings)
+      await db.accounts.bulkAdd(accounts)
+      await db.categories.bulkAdd(categories)
+      await db.transactions.bulkAdd(transactions)
+      await db.budgets.bulkAdd(budgets)
+      await db.settings.bulkAdd(settings)
     }
   )
   await db.meta.put({ key: 'seeded', value: 1 })
-  return { imported: data.transactions.length, skipped: 0 }
+  return { imported: transactions.length, skipped: 0 }
 }
 
 /** 合并导入：按 id 去重，更新时间较新的记录胜出。 */

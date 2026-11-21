@@ -152,12 +152,17 @@ async function onFileChange(event: Event): Promise<void> {
     return
   }
 
+  const counts = `流水 ${backup.data.transactions.length} 笔、账户 ${backup.data.accounts.length} 个、分类 ${backup.data.categories.length} 个、预算 ${backup.data.budgets.length} 条`
+  const exportedAt = backup.exportedAt
+    ? `导出时间 ${new Date(backup.exportedAt).toLocaleString('zh-CN')}。`
+    : ''
+
   const ok = await confirmDialog({
     title: mode.value === 'replace' ? '覆盖导入？' : '合并导入？',
     message:
       mode.value === 'replace'
-        ? `将清空当前全部数据，并恢复备份中的 ${backup.data.transactions.length} 笔流水。`
-        : `将合并备份中的 ${backup.data.transactions.length} 笔流水，重复记录自动跳过。`,
+        ? `${exportedAt}将清空当前 ${stats.value.transactions} 笔流水，恢复备份中的 ${counts}。覆盖前会自动导出当前数据。`
+        : `${exportedAt}${counts}，按 id 去重合并。`,
     confirmText: '导入',
     danger: mode.value === 'replace'
   })
@@ -165,6 +170,16 @@ async function onFileChange(event: Event): Promise<void> {
 
   importing.value = true
   try {
+    if (mode.value === 'replace') {
+      const current = await buildBackup()
+      download(
+        `free-ledger-before-import-${today()}.json`,
+        serializeBackup(current),
+        'application/json'
+      )
+      toast('已自动导出当前数据备份', 'info')
+    }
+
     const result =
       mode.value === 'replace' ? await replaceWithBackup(backup) : await mergeWithBackup(backup)
     await store.reloadAll()

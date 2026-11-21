@@ -205,6 +205,48 @@ describe('回收站', () => {
   })
 })
 
+describe('分类迁移删除', () => {
+  it('有流水时需要指定迁移目标，迁移后删除', async () => {
+    const custom = await createCategory({ kind: 'expense', name: '咖啡', icon: 'food', color: '#123456' })
+    const transaction = await createTransaction({
+      kind: 'expense',
+      amountCents: 1800,
+      categoryId: custom.id,
+      accountId: await firstAccountId(),
+      toAccountId: null,
+      date: '2026-11-21',
+      note: ''
+    })
+
+    const blocked = await deleteCategory(custom.id)
+    expect(blocked.ok).toBe(false)
+    expect(blocked.reason).toContain('迁移')
+
+    const target = await createCategory({ kind: 'expense', name: '饮品', icon: 'food', color: '#654321' })
+    const result = await deleteCategory(custom.id, target.id)
+    expect(result.ok).toBe(true)
+    expect((await db.transactions.get(transaction.id))?.categoryId).toBe(target.id)
+    expect(await db.categories.get(custom.id)).toBeUndefined()
+  })
+
+  it('不能迁移到不同类型的分类', async () => {
+    const custom = await createCategory({ kind: 'expense', name: '临时', icon: 'other', color: '#111111' })
+    await createTransaction({
+      kind: 'expense',
+      amountCents: 500,
+      categoryId: custom.id,
+      accountId: await firstAccountId(),
+      toAccountId: null,
+      date: '2026-11-21',
+      note: ''
+    })
+    const incomeTarget = await createCategory({ kind: 'income', name: '奖金池', icon: 'bonus', color: '#222222' })
+    const result = await deleteCategory(custom.id, incomeTarget.id)
+    expect(result.ok).toBe(false)
+    expect(result.reason).toContain('同类型')
+  })
+})
+
 describe('分类与账户保护', () => {
   it('内置分类不可删除', async () => {
     const categories = await listCategories('expense')

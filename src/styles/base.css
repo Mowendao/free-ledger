@@ -1823,6 +1823,58 @@ code {
   transform: translateY(-6px);
 }
 
+.search-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  margin-bottom: 12px;
+  padding: 12px 14px;
+  font-size: 12px;
+  color: var(--c-text-2);
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius);
+}
+
+.search-summary__title {
+  letter-spacing: 0.14em;
+  color: var(--c-text-3);
+}
+
+.search-summary__clear {
+  margin-left: auto;
+}
+
+.search-field__clear {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  color: var(--c-text-3);
+}
+
+.amount-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.amount-range .input {
+  height: 38px;
+}
+
+.amount-range__dash {
+  color: var(--c-text-3);
+}
+
+.migration-list {
+  max-height: 260px;
+  overflow: auto;
+}
+
 /* ---------- 回收站 ---------- */
 .trash-row {
   display: flex;

@@ -123,7 +123,13 @@ describe('备份校验', () => {
   it('拒绝更高的备份版本', () => {
     expect(() =>
       parseBackup(JSON.stringify({ app: 'free-ledger', schemaVersion: 99, data: {} }))
-    ).toThrow('版本高于当前应用')
+    ).toThrow('备份版本不受支持')
+  })
+
+  it('拒绝版本 0', () => {
+    expect(() =>
+      parseBackup(JSON.stringify({ app: 'free-ledger', schemaVersion: 0, data: {} }))
+    ).toThrow('备份版本不受支持')
   })
 
   it('拒绝金额为 0 的流水', async () => {
@@ -145,6 +151,38 @@ describe('备份校验', () => {
     const raw = JSON.parse(serializeBackup(await buildBackup()))
     raw.data.transactions[0].date = '2026-02-30'
     expect(() => parseBackup(JSON.stringify(raw))).toThrow('流水日期无效')
+  })
+})
+
+describe('导入容错', () => {
+  it('同一 id 的重复记录按 updatedAt 去重', async () => {
+    await seedTransaction()
+    const raw = JSON.parse(serializeBackup(await buildBackup()))
+    const original = raw.data.transactions[0]
+    raw.data.transactions.push({
+      ...original,
+      amountCents: 9999,
+      updatedAt: original.updatedAt + 1000
+    })
+
+    const parsed = parseBackup(JSON.stringify(raw))
+    expect(parsed.data.transactions).toHaveLength(1)
+    expect(parsed.data.transactions[0].amountCents).toBe(9999)
+  })
+
+  it('拒绝引用不存在分类的流水', async () => {
+    await seedTransaction()
+    const raw = JSON.parse(serializeBackup(await buildBackup()))
+    raw.data.transactions[0].categoryId = 'missing-category'
+    expect(() => parseBackup(JSON.stringify(raw))).toThrow('不存在的分类')
+  })
+
+  it('汇总多处格式错误', async () => {
+    await seedTransaction()
+    const raw = JSON.parse(serializeBackup(await buildBackup()))
+    raw.data.transactions.push({ ...raw.data.transactions[0], id: 'bad-1', amountCents: 0 })
+    raw.data.transactions.push({ ...raw.data.transactions[0], id: 'bad-2', date: '2026-02-30' })
+    expect(() => parseBackup(JSON.stringify(raw))).toThrow(/备份有 2 处错误/)
   })
 })
 

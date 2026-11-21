@@ -54,13 +54,37 @@ export async function countCategoryUsage(id: string): Promise<number> {
   return rows.filter((transaction) => !transaction.deletedAt).length
 }
 
-/** 删除分类：内置分类与被引用分类都拒绝删除。 */
-export async function deleteCategory(id: string): Promise<{ ok: boolean; reason?: string }> {
+/** 删除分类：内置分类拒绝；被引用时可选择迁移到同类型分类后删除。 */
+export async function deleteCategory(
+  id: string,
+  targetCategoryId?: string | null
+): Promise<{ ok: boolean; reason?: string }> {
   const category = await db.categories.get(id)
   if (!category) return { ok: false, reason: '分类不存在' }
   if (category.builtin) return { ok: false, reason: '内置分类不可删除' }
+
   const usage = await countCategoryUsage(id)
-  if (usage > 0) return { ok: false, reason: `该分类有 ${usage} 笔流水，不能删除` }
-  await db.categories.delete(id)
+  if (usage === 0) {
+    await db.categories.delete(id)
+    return { ok: true }
+  }
+
+  if (!targetCategoryId) {
+    return { ok: false, reason: `该分类有 ${usage} 笔流水，请选择迁移目标` }
+  }
+
+  const target = await db.categories.get(targetCategoryId)
+  if (!target || target.id === id) return { ok: false, reason: '迁移目标无效' }
+  if (target.kind !== category.kind) return { ok: false, reason: '只能迁移到同类型分类' }
+
+  await db.transaction('rw', db.transactions, db.categories, async () => {
+    const rows = await db.transactions.where('categoryId').equals(id).toArray()
+    const now = Date.now()
+    for (const row of rows) {
+      await db.transactions.update(row.id, { categoryId: target.id, updatedAt: now })
+    }
+    await db.categories.delete(id)
+  })
+
   return { ok: true }
 }
