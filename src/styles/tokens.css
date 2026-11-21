@@ -161,6 +161,127 @@ html[data-skin='kraft'] {
   --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.07'/%3E%3C/svg%3E");
 }
 
+html[data-skin='rose'] {
+  color-scheme: light;
+
+  --c-paper: #f6ece7;
+  --c-bg: #f6ece7;
+  --c-surface: #fbf5f1;
+  --c-surface-2: #efe0d9;
+
+  --c-text: #3a2f2c;
+  --c-text-2: #6d5b56;
+  --c-text-3: #9c8982;
+  --c-line: #e4d3cb;
+  --c-line-strong: #cfb7ad;
+
+  --c-seal: #a9736b;
+  --c-seal-soft: rgba(169, 115, 107, 0.1);
+  --c-seal-ink: #fff8f5;
+
+  --c-income: #6f7f6a;
+  --c-expense: #a9736b;
+  --c-danger: #9d5a50;
+
+  --c-primary: #3a2f2c;
+  --c-primary-strong: #a9736b;
+  --c-primary-soft: rgba(169, 115, 107, 0.1);
+
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 18px;
+
+  --shadow-1: 0 2px 12px rgba(58, 47, 44, 0.05);
+  --shadow-2: 0 14px 36px rgba(58, 47, 44, 0.16);
+
+  --font: system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', 'Segoe UI', sans-serif;
+  --font-sans: var(--font);
+
+  --noise: none;
+}
+
+html[data-skin='olive'] {
+  color-scheme: light;
+
+  --c-paper: #efe6d1;
+  --c-bg: #eee6d2;
+  --c-surface: #f6efdd;
+  --c-surface-2: #e0d4b8;
+
+  --c-text: #2f3a27;
+  --c-text-2: #5a6347;
+  --c-text-3: #8a8f6f;
+  --c-line: #cfc1a0;
+  --c-line-strong: #b3a37c;
+
+  --c-seal: #7d6a3c;
+  --c-seal-soft: rgba(125, 106, 60, 0.1);
+  --c-seal-ink: #f7f1e1;
+
+  --c-income: #556b3f;
+  --c-expense: #8a5a34;
+  --c-danger: #7e4a2c;
+
+  --c-primary: #2f3a27;
+  --c-primary-strong: #7d6a3c;
+  --c-primary-soft: rgba(125, 106, 60, 0.1);
+
+  --radius-sm: 2px;
+  --radius: 3px;
+  --radius-lg: 4px;
+
+  --shadow-1: none;
+  --shadow-2: 0 10px 28px rgba(47, 58, 39, 0.2);
+
+  --font: 'Songti SC', 'STSong', 'Source Han Serif SC', 'Noto Serif CJK SC', 'SimSun', serif;
+  --font-sans: system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+
+  --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+}
+
+html[data-skin='terminal'] {
+  color-scheme: light;
+
+  --c-paper: #f2f5ec;
+  --c-bg: #f2f5ec;
+  --c-surface: #f8faf3;
+  --c-surface-2: #e6ebdc;
+
+  --c-text: #1f3b26;
+  --c-text-2: #41624c;
+  --c-text-3: #7a8f7f;
+  --c-line: #cfdac6;
+  --c-line-strong: #aebfa4;
+
+  --c-seal: #2f7a4a;
+  --c-seal-soft: rgba(47, 122, 74, 0.1);
+  --c-seal-ink: #f4fbf5;
+
+  --c-income: #2f7a4a;
+  --c-expense: #b06a2c;
+  --c-danger: #9a4a2a;
+
+  --c-primary: #1f3b26;
+  --c-primary-strong: #2f7a4a;
+  --c-primary-soft: rgba(47, 122, 74, 0.1);
+
+  --radius-sm: 0;
+  --radius: 0;
+  --radius-lg: 0;
+
+  --shadow-1: none;
+  --shadow-2: 0 10px 30px rgba(31, 59, 38, 0.18);
+
+  --font: 'Cascadia Mono', 'Consolas', 'Courier New', ui-monospace, monospace;
+  --font-sans: var(--font);
+
+  --noise: repeating-linear-gradient(
+    0deg,
+    rgba(31, 59, 38, 0.04) 0 1px,
+    transparent 1px 3px
+  );
+}
+
 /* 默认暗色（等同宣纸·墨夜；皮肤缺失时的兜底） */
 html[data-theme='dark'] {
   color-scheme: dark;
@@ -277,4 +398,95 @@ html[data-theme='dark'][data-skin='kraft'] {
   --shadow-1: none;
   --shadow-2: 0 12px 32px rgba(0, 0, 0, 0.55);
   --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+}
+
+html[data-theme='dark'][data-skin='rose'] {
+  --c-paper: #1a1413;
+  --c-bg: #1a1413;
+  --c-surface: #241b19;
+  --c-surface-2: #2e2320;
+
+  --c-text: #f0e3de;
+  --c-text-2: #bfa9a2;
+  --c-text-3: #8a746d;
+  --c-line: #3a2c28;
+  --c-line-strong: #55403a;
+
+  --c-seal: #d59a90;
+  --c-seal-soft: rgba(213, 154, 144, 0.14);
+  --c-seal-ink: #241a17;
+
+  --c-income: #a8b89f;
+  --c-expense: #d59a90;
+  --c-danger: #d59a90;
+
+  --c-primary: #f0e3de;
+  --c-primary-strong: #d59a90;
+  --c-primary-soft: rgba(213, 154, 144, 0.14);
+
+  --shadow-1: 0 2px 12px rgba(0, 0, 0, 0.3);
+  --shadow-2: 0 14px 40px rgba(0, 0, 0, 0.55);
+  --noise: none;
+}
+
+html[data-theme='dark'][data-skin='olive'] {
+  --c-paper: #171c12;
+  --c-bg: #171c12;
+  --c-surface: #202618;
+  --c-surface-2: #2a311f;
+
+  --c-text: #e7e2cc;
+  --c-text-2: #b5b394;
+  --c-text-3: #85866a;
+  --c-line: #343b26;
+  --c-line-strong: #4a5136;
+
+  --c-seal: #c0a86a;
+  --c-seal-soft: rgba(192, 168, 106, 0.14);
+  --c-seal-ink: #1a1710;
+
+  --c-income: #9db27f;
+  --c-expense: #c08a5e;
+  --c-danger: #c08a5e;
+
+  --c-primary: #e7e2cc;
+  --c-primary-strong: #c0a86a;
+  --c-primary-soft: rgba(192, 168, 106, 0.14);
+
+  --shadow-1: none;
+  --shadow-2: 0 12px 32px rgba(0, 0, 0, 0.55);
+  --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+}
+
+html[data-theme='dark'][data-skin='terminal'] {
+  --c-paper: #08120b;
+  --c-bg: #08120b;
+  --c-surface: #0e1a11;
+  --c-surface-2: #132218;
+
+  --c-text: #9fe6b3;
+  --c-text-2: #6fae82;
+  --c-text-3: #4f7d5d;
+  --c-line: #1c3322;
+  --c-line-strong: #2a4a33;
+
+  --c-seal: #4ade80;
+  --c-seal-soft: rgba(74, 222, 128, 0.12);
+  --c-seal-ink: #06140a;
+
+  --c-income: #4ade80;
+  --c-expense: #f0a860;
+  --c-danger: #f0a860;
+
+  --c-primary: #9fe6b3;
+  --c-primary-strong: #4ade80;
+  --c-primary-soft: rgba(74, 222, 128, 0.12);
+
+  --shadow-1: none;
+  --shadow-2: 0 12px 32px rgba(0, 0, 0, 0.6);
+  --noise: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.32) 0 1px,
+    transparent 1px 3px
+  );
 }

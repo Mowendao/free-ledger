@@ -79,7 +79,7 @@ describe('应用冒烟', () => {
     await flushPromises()
 
     const cards = wrapper.findAll('.skin-card')
-    expect(cards).toHaveLength(4)
+    expect(cards).toHaveLength(7)
 
     await cards[1].trigger('click')
     await new Promise((resolve) => setTimeout(resolve, 80))

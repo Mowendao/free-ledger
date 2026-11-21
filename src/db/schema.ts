@@ -59,7 +59,7 @@ export interface Meta {
   value: unknown
 }
 
-export type SkinId = 'ink' | 'mono' | 'celadon' | 'kraft'
+export type SkinId = 'ink' | 'mono' | 'celadon' | 'kraft' | 'rose' | 'olive' | 'terminal'
 
 export interface AppSettings {
   theme: 'light' | 'dark' | 'system'

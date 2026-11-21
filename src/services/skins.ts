@@ -57,6 +57,39 @@ export const SKINS: SkinMeta[] = [
     font: "'Songti SC', 'STSong', 'SimSun', serif",
     themeColor: '#e8dcc4',
     themeColorDark: '#1a1510'
+  },
+  {
+    id: 'rose',
+    name: '莫兰迪粉',
+    desc: '低饱和玫瑰 · 柔雾',
+    bg: '#f6ece7',
+    text: '#3a2f2c',
+    accent: '#a9736b',
+    font: "system-ui, -apple-system, 'PingFang SC', sans-serif",
+    themeColor: '#f6ece7',
+    themeColorDark: '#1a1413'
+  },
+  {
+    id: 'olive',
+    name: '绿皮火车',
+    desc: '军绿米黄 · 旧车票',
+    bg: '#eee6d2',
+    text: '#2f3a27',
+    accent: '#7d6a3c',
+    font: "'Songti SC', 'STSong', 'SimSun', serif",
+    themeColor: '#eee6d2',
+    themeColorDark: '#171c12'
+  },
+  {
+    id: 'terminal',
+    name: '终端',
+    desc: '等宽字符 · 扫描线',
+    bg: '#f2f5ec',
+    text: '#1f3b26',
+    accent: '#2f7a4a',
+    font: "'Cascadia Mono', 'Consolas', 'Courier New', monospace",
+    themeColor: '#f2f5ec',
+    themeColorDark: '#08120b'
   }
 ]
 

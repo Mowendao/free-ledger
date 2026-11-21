@@ -1852,8 +1852,38 @@ html[data-skin='kraft'] :is(.bubble, .category-strip__icon, .category-manage__ic
 }
 
 html[data-skin='celadon'] .chip,
-html[data-skin='celadon'] .seg--small .seg__item {
+html[data-skin='celadon'] .seg--small .seg__item,
+html[data-skin='rose'] .chip,
+html[data-skin='rose'] .seg--small .seg__item {
   border-radius: 999px;
+}
+
+html[data-skin='olive'] .page-header {
+  border-bottom-width: 2px;
+}
+
+html[data-skin='olive'] .card-title::before {
+  width: 5px;
+}
+
+html[data-skin='terminal'] .amount-card__number {
+  letter-spacing: 0;
+}
+
+html[data-skin='terminal'] .card-title::before {
+  width: 2px;
+}
+
+html[data-skin='rose'] :is(.bubble, .category-strip__icon, .category-manage__icon, .legend__dot, .donut__svg) {
+  filter: saturate(0.8);
+}
+
+html[data-skin='olive'] :is(.bubble, .category-strip__icon, .category-manage__icon, .legend__dot, .donut__svg) {
+  filter: sepia(0.15) saturate(0.85);
+}
+
+html[data-skin='terminal'] :is(.bubble, .category-strip__icon, .category-manage__icon, .legend__dot, .donut__svg) {
+  filter: grayscale(1);
 }
 
 html[data-skin='kraft'] .row,

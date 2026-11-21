@@ -23,7 +23,7 @@
 - **离线可用**：PWA 安装到主屏幕，断网也能完整使用。
 - **深色模式**：浅色 / 深色 / 跟随系统。
 - **零外部依赖请求**：不加载 CDN、字体、统计脚本，生产构建注入 CSP。
-- **四种界面风格**：宣纸账簿 / 墨白 / 青瓷 / 牛皮纸，随时切换并跟随备份迁移。
+- **七种界面风格**：宣纸账簿 / 墨白 / 青瓷 / 牛皮纸 / 莫兰迪粉 / 绿皮火车 / 终端，随时切换并跟随备份迁移。
 
 ## 界面预览
 
@@ -38,14 +38,17 @@
 
 ## 界面风格
 
-内置四种风格，在「我的 → 界面风格」随时切换；选择保存在本机，并随 JSON 备份迁移。
+内置七种风格，在「我的 → 界面风格」随时切换；选择保存在本机，并随 JSON 备份迁移。
 每种风格都各有浅色 / 深色两套色板。
 
 <p align="center">
-  <img src="docs/screenshots/skin-mono.png" width="180" alt="墨白" />
-  <img src="docs/screenshots/skin-celadon.png" width="180" alt="青瓷" />
-  <img src="docs/screenshots/skin-kraft.png" width="180" alt="牛皮纸" />
-  <img src="docs/screenshots/skins.png" width="180" alt="主题选择" />
+  <img src="docs/screenshots/skin-mono.png" width="170" alt="墨白" />
+  <img src="docs/screenshots/skin-celadon.png" width="170" alt="青瓷" />
+  <img src="docs/screenshots/skin-kraft.png" width="170" alt="牛皮纸" />
+  <img src="docs/screenshots/skin-rose.png" width="170" alt="莫兰迪粉" />
+  <img src="docs/screenshots/skin-olive.png" width="170" alt="绿皮火车" />
+  <img src="docs/screenshots/skin-terminal.png" width="170" alt="终端" />
+  <img src="docs/screenshots/skins.png" width="170" alt="主题选择" />
 </p>
 
 | 风格 | 气质 |
@@ -54,6 +57,9 @@
 | **墨白** | 纯黑白编辑排版、直角无饰、图标灰度 |
 | **青瓷** | 莫兰迪青绿、柔圆角、轻阴影、胶囊标签 |
 | **牛皮纸** | 复古票据、砖红强调、虚线分栏、双线页头 |
+| **莫兰迪粉** | 低饱和玫瑰、柔雾感、圆角卡片 |
+| **绿皮火车** | 军绿米黄、旧车票质感、双线页头 |
+| **终端** | 等宽字符、扫描线、打印纸与荧光屏 |
 
 ## 设计语言
 
