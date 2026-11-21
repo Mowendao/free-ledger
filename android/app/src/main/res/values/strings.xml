@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Free Ledger</string>
+    <string name="title_activity_main">Free Ledger</string>
+    <string name="package_name">io.github.mowendao.freeledger</string>
+    <string name="custom_url_scheme">io.github.mowendao.freeledger</string>
+</resources>
