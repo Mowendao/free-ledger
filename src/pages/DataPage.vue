@@ -26,7 +26,7 @@ import {
 import { getMerchantRules, markBackupNow, setMerchantRules } from '@/repositories/settings'
 import { addImportedTransactions } from '@/repositories/transactions'
 import { applyMerchantRules } from '@/services/merchantRules'
-import { decodeWechatCsv, parseWechatBill } from '@/services/wechat'
+import { parseWechatFile } from '@/services/wechat'
 import PageHeader from '@/components/PageHeader.vue'
 import AppIcon from '@/components/AppIcon.vue'
 
@@ -131,8 +131,7 @@ async function onWechatFile(event: Event): Promise<void> {
 
   let result
   try {
-    const text = decodeWechatCsv(await file.arrayBuffer())
-    result = parseWechatBill(text, wechatAccountId.value)
+    result = parseWechatFile(await file.arrayBuffer(), wechatAccountId.value)
   } catch (error) {
     toast(error instanceof Error ? error.message : '账单解析失败', 'error')
     return
@@ -420,7 +419,7 @@ async function clearData(): Promise<void> {
       <h2 class="card-title">导入微信账单</h2>
       <p class="paragraph">
         微信没有开放个人账单接口，无法自动同步。请在微信「我 → 服务 → 钱包 → 账单 → 常见问题 → 下载账单」
-        导出 CSV，再在这里导入。文件只在本机解析，不会上传。
+        导出 CSV / Excel，再在这里导入。文件只在本机解析，不会上传。
       </p>
 
       <div class="field">
@@ -443,12 +442,12 @@ async function clearData(): Promise<void> {
         ref="wechatInput"
         class="hidden-input wechat-file-input"
         type="file"
-        accept=".csv,text/csv"
+        accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         @change="onWechatFile"
       />
       <button class="btn btn--block" :disabled="wechatImporting" @click="triggerWechatImport">
         <AppIcon name="upload" :size="17" />
-        {{ wechatImporting ? '导入中…' : '选择微信账单 CSV' }}
+        {{ wechatImporting ? '导入中…' : '选择微信账单（CSV / Excel）' }}
       </button>
       <p v-if="merchantRuleCount > 0" class="hint">
         已学习 {{ merchantRuleCount }} 条商户规则，导入时会自动套用。

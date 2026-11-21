@@ -1,4 +1,36 @@
 import { test, expect } from '@playwright/test'
+import { strToU8, zipSync } from 'fflate'
+
+function columnName(index: number): string {
+  let name = ''
+  let value = index + 1
+  while (value > 0) {
+    const remainder = (value - 1) % 26
+    name = String.fromCharCode(65 + remainder) + name
+    value = Math.floor((value - 1) / 26)
+  }
+  return name
+}
+
+function buildXlsx(rows: string[][]): Buffer {
+  const rowXml = rows
+    .map((cells, rowIndex) => {
+      const cellXml = cells
+        .map(
+          (value, column) =>
+            `<c r="${columnName(column)}${rowIndex + 1}" t="inlineStr"><is><t>${value
+              .replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;')}</t></is></c>`
+        )
+        .join('')
+      return `<row r="${rowIndex + 1}">${cellXml}</row>`
+    })
+    .join('')
+  const sheet = `<worksheet><sheetData>${rowXml}</sheetData></worksheet>`
+  const zip = zipSync({ 'xl/worksheets/sheet1.xml': strToU8(sheet) })
+  return Buffer.from(zip)
+}
 
 test.beforeEach(async ({ page }) => {
   await page.goto('/#/record')
@@ -59,5 +91,57 @@ test('可以导入微信账单并标记为未分类', async ({ page }) => {
 
   await page.goto('/#/ledger')
   await expect(page.locator('.tx-row')).toHaveCount(2)
+  await expect(page.locator('.tx-row').first()).toContainText('未分类')
+})
+
+test('可以导入 xlsx 格式的微信账单', async ({ page }) => {
+  await page.goto('/#/me/data')
+
+  const now = new Date()
+  const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(
+    now.getDate()
+  ).padStart(2, '0')}`
+  const rows = [
+    [],
+    ['微信支付账单明细'],
+    [],
+    [
+      '交易时间',
+      '交易类型',
+      '交易对方',
+      '商品',
+      '收/支',
+      '金额(元)',
+      '支付方式',
+      '当前状态',
+      '交易单号',
+      '商户单号',
+      '备注'
+    ],
+    [
+      `${date} 12:30:00`,
+      '商户消费',
+      '便利店',
+      '矿泉水',
+      '支出',
+      '¥3.50',
+      '零钱',
+      '支付成功',
+      'wx-xlsx-1',
+      '',
+      ''
+    ]
+  ]
+
+  await page.locator('.wechat-file-input').setInputFiles({
+    name: 'wechat.xlsx',
+    mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    buffer: buildXlsx(rows)
+  })
+  await page.getByRole('button', { name: '导入', exact: true }).click()
+  await expect(page.locator('.toast')).toContainText('已导入 1 笔')
+
+  await page.goto('/#/ledger')
+  await expect(page.locator('.tx-row')).toHaveCount(1)
   await expect(page.locator('.tx-row').first()).toContainText('未分类')
 })
