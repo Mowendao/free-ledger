@@ -123,6 +123,29 @@ PWA 需要 **HTTPS**（或 localhost）才能注册 Service Worker 并安装：
 
 局域网 `http://192.168.x.x:5173` 仅适合调试：可以浏览和记账，但无法安装与离线。
 
+## Android APK
+
+已提供 debug 签名安装包（v0.8.2，个人使用）：
+
+**下载**：<https://github.com/Mowendao/free-ledger/releases/download/v0.8.2/FreeLedger-0.8.2-debug.apk>
+SHA-256：`473BD99CB3A62C433ED204D41F8F39EAC59204193CD76915AD87643FB7CCF38C`
+
+- 基于 Capacitor 打包，Web 资源内置在 APK 中，首次打开即可离线使用。
+- **数据与浏览器 PWA 不互通**：先在 PWA「数据备份与导出」导出 JSON，再到 APK 同一页面导入。
+- debug 签名仅适合个人安装；上架应用商店需自行生成 release keystore 并签名。
+- 最低 Android 6.0（API 23）。
+
+自行构建（需要 Android SDK + JDK 21）：
+
+```bash
+npm ci
+npm run build
+npx cap sync android
+cd android && ./gradlew assembleDebug
+```
+
+也可以推送 `v*` tag，或手动触发 GitHub Actions 的 `Build Android APK`。详见 [docs/android.md](docs/android.md)。
+
 ## 部署
 
 ### GitHub Pages（推荐）
@@ -195,6 +218,7 @@ PWA 需要 **HTTPS**（或 localhost）才能注册 Service Worker 并安装：
 │  └─ styles/              # 设计令牌与基础样式
 ├─ tests/                  # Vitest 单元 / 组件 / 冒烟测试
 ├─ e2e/                    # Playwright 端到端测试
+├─ android/                # Capacitor Android 工程（APK 构建）
 ├─ public/                 # 图标与静态资源
 ├─ docs/                   # 架构、数据模型、隐私说明
 └─ .github/workflows/      # CI 与 Pages 部署
@@ -206,7 +230,8 @@ PWA 需要 **HTTPS**（或 localhost）才能注册 Service Worker 并安装：
 ## 技术栈
 
 Vue 3 · TypeScript · Vite 7 · vue-router（hash）· Pinia · Dexie 4（IndexedDB）·
-vite-plugin-pwa · Vitest + jsdom · ESLint · Playwright · fflate（本机解压 xlsx）。样式为手写 CSS 设计令牌，图表为自制 SVG，不引入 UI 库与图表库。
+vite-plugin-pwa · Capacitor（Android）· Vitest + jsdom · ESLint · Playwright · fflate（本机解压 xlsx）。
+样式为手写 CSS 设计令牌，图表为自制 SVG，不引入 UI 库与图表库。
 
 ## 路线图
 

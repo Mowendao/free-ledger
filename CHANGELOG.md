@@ -4,6 +4,10 @@
 
 ## [0.8.2] - 2026-11-21
 
+### 打包
+
+- 接入 Capacitor Android 工程，新增 GitHub Actions 构建 APK（debug 签名），并附加到 Release。
+
 ### 修复
 
 - 微信 xlsx 账单在空行导致行号不连续时崩溃（`Cannot read properties of undefined`）；解析结果改为稠密行。
