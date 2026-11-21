@@ -2,10 +2,14 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { db } from '@/db/schema'
 import { resetDb } from '@/db/init'
 import {
+  countDeletedTransactions,
   createTransaction,
   deleteTransaction,
+  emptyTrash,
   getTransaction,
+  listDeletedTransactions,
   listTransactions,
+  purgeTransaction,
   restoreTransaction
 } from '@/repositories/transactions'
 import { deleteAccount, listAccounts, createAccount } from '@/repositories/accounts'
@@ -139,6 +143,65 @@ describe('软删除与撤销', () => {
     })
     await deleteTransaction(transaction.id)
     expect((await deleteAccount(accountId)).ok).toBe(true)
+  })
+})
+
+describe('回收站', () => {
+  it('列出已删除记录，支持恢复与彻底删除', async () => {
+    const accountId = await firstAccountId()
+    const categoryId = await firstExpenseCategoryId()
+    const first = await createTransaction({
+      kind: 'expense',
+      amountCents: 1200,
+      categoryId,
+      accountId,
+      toAccountId: null,
+      date: '2026-11-20',
+      note: 'A'
+    })
+    const second = await createTransaction({
+      kind: 'expense',
+      amountCents: 3400,
+      categoryId,
+      accountId,
+      toAccountId: null,
+      date: '2026-11-19',
+      note: 'B'
+    })
+    await deleteTransaction(first.id)
+    await deleteTransaction(second.id)
+
+    expect(await countDeletedTransactions()).toBe(2)
+    expect(await listDeletedTransactions()).toHaveLength(2)
+
+    await restoreTransaction(first.id)
+    expect(await listDeletedTransactions()).toHaveLength(1)
+    expect(await countDeletedTransactions()).toBe(1)
+
+    await purgeTransaction(second.id)
+    expect(await listDeletedTransactions()).toHaveLength(0)
+    expect(await db.transactions.get(second.id)).toBeUndefined()
+  })
+
+  it('可以清空回收站', async () => {
+    const accountId = await firstAccountId()
+    const categoryId = await firstExpenseCategoryId()
+    for (const amount of [100, 200]) {
+      const transaction = await createTransaction({
+        kind: 'expense',
+        amountCents: amount,
+        categoryId,
+        accountId,
+        toAccountId: null,
+        date: '2026-11-18',
+        note: ''
+      })
+      await deleteTransaction(transaction.id)
+    }
+
+    expect(await emptyTrash()).toBe(2)
+    expect(await listDeletedTransactions()).toHaveLength(0)
+    expect(await listTransactions({})).toHaveLength(0)
   })
 })
 

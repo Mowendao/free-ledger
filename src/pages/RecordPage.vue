@@ -162,15 +162,15 @@ async function remove(): Promise<void> {
   if (!editingId.value) return
   const id = editingId.value
   const ok = await confirmDialog({
-    title: '删除这笔记录？',
-    message: '删除后可在提示条里撤销，回收站保留 30 天。',
+    title: '移入回收站？',
+    message: '删除后可在「我的 → 回收站」恢复，保留 30 天。',
     confirmText: '删除',
     danger: true
   })
   if (!ok) return
   await deleteTransaction(id)
   await store.reloadAll()
-  toast('已删除这笔记录', 'info', {
+  toast('已移入回收站', 'info', {
     label: '撤销',
     onClick: async () => {
       await restoreTransaction(id)

@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useLedgerStore } from '@/stores/useLedger'
 import { formatCents } from '@/services/money'
 import { toast } from '@/services/toast'
 import { SKINS } from '@/services/skins'
+import { countDeletedTransactions } from '@/repositories/transactions'
 import type { SkinId } from '@/db/schema'
 import AppIcon from '@/components/AppIcon.vue'
 import { version } from '../../package.json'
@@ -14,6 +15,11 @@ const router = useRouter()
 
 const appVersion = version
 const currency = computed(() => store.settings.currency)
+const deletedCount = ref(0)
+
+onMounted(async () => {
+  deletedCount.value = await countDeletedTransactions()
+})
 
 const themeOptions = [
   { value: 'light', label: '浅色', icon: 'sun' },
@@ -118,6 +124,16 @@ async function setCurrency(value: string): Promise<void> {
         <span class="row__main">
           <span class="row__title">数据备份与导出</span>
           <span class="row__sub">{{ lastBackupLabel }}</span>
+        </span>
+        <AppIcon name="chevron-right" :size="18" class="muted" />
+      </button>
+      <button class="row" @click="router.push('/me/trash')">
+        <span class="bubble bubble--soft"><AppIcon name="trash" :size="18" /></span>
+        <span class="row__main">
+          <span class="row__title">回收站</span>
+          <span class="row__sub">
+            {{ deletedCount > 0 ? `${deletedCount} 条待处理 · 保留 30 天` : '删除的记录会保留 30 天' }}
+          </span>
         </span>
         <AppIcon name="chevron-right" :size="18" class="muted" />
       </button>

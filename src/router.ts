@@ -21,6 +21,7 @@ const router = createRouter({
       component: () => import('@/pages/CategoriesPage.vue')
     },
     { path: '/me/budget', name: 'budget', component: () => import('@/pages/BudgetPage.vue') },
+    { path: '/me/trash', name: 'trash', component: () => import('@/pages/TrashPage.vue') },
     { path: '/me/data', name: 'data', component: () => import('@/pages/DataPage.vue') },
     { path: '/me/about', name: 'about', component: () => import('@/pages/AboutPage.vue') },
     { path: '/:pathMatch(.*)*', redirect: '/record' }

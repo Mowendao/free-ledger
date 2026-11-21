@@ -1823,6 +1823,75 @@ code {
   transform: translateY(-6px);
 }
 
+/* ---------- 回收站 ---------- */
+.trash-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--c-line);
+}
+
+.trash-row:last-child {
+  border-bottom: 0;
+}
+
+.trash-row__main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.trash-row__top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.trash-row__title {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.trash-row__amount {
+  flex: none;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.trash-row__sub {
+  overflow: hidden;
+  font-size: 11px;
+  color: var(--c-text-3);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.trash-row__actions {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.btn--sm {
+  height: 30px;
+  padding: 0 10px;
+  font-size: 12px;
+}
+
+.trash-empty {
+  margin-top: 16px;
+}
+
+.trash-count {
+  font-size: 12px;
+  color: var(--c-text-3);
+}
+
 /* ---------- 主题皮肤 ---------- */
 .card,
 .summary-card,

@@ -108,6 +108,27 @@ export async function restoreTransaction(id: string): Promise<void> {
   await db.transactions.update(id, { deletedAt: null, updatedAt: Date.now() })
 }
 
+/** 回收站列表，按删除时间倒序。 */
+export async function listDeletedTransactions(): Promise<Transaction[]> {
+  const rows = await db.transactions.filter((transaction) => Boolean(transaction.deletedAt)).toArray()
+  return rows.sort((a, b) => (b.deletedAt ?? 0) - (a.deletedAt ?? 0))
+}
+
+export async function countDeletedTransactions(): Promise<number> {
+  const rows = await db.transactions.filter((transaction) => Boolean(transaction.deletedAt)).toArray()
+  return rows.length
+}
+
+/** 彻底删除一条回收站记录。 */
+export async function purgeTransaction(id: string): Promise<void> {
+  await db.transactions.delete(id)
+}
+
+/** 清空回收站，返回删除条数。 */
+export async function emptyTrash(): Promise<number> {
+  return db.transactions.filter((transaction) => Boolean(transaction.deletedAt)).delete()
+}
+
 export async function listAllTransactions(): Promise<Transaction[]> {
   return listTransactions()
 }

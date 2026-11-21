@@ -73,6 +73,13 @@ describe('应用冒烟', () => {
     expect(wrapper.text()).toContain('关于 Free Ledger')
   })
 
+  it('回收站页面可以打开', async () => {
+    const wrapper = await mountApp()
+    await router.push('/me/trash')
+    await flushPromises()
+    expect(wrapper.text()).toContain('回收站是空的')
+  })
+
   it('可以切换界面风格并持久化', async () => {
     const wrapper = await mountApp()
     await router.push('/me')
