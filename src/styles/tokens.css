@@ -1,0 +1,44 @@
+:root {
+  color-scheme: light;
+  --c-bg: #f5f6f8;
+  --c-surface: #ffffff;
+  --c-surface-2: #f0f2f5;
+  --c-text: #14171f;
+  --c-text-2: #5b6272;
+  --c-text-3: #9aa1ae;
+  --c-border: #e7e9ef;
+  --c-primary: #10b981;
+  --c-primary-strong: #0b8f66;
+  --c-primary-soft: rgba(16, 185, 129, 0.12);
+  --c-danger: #e5484d;
+  --c-danger-soft: rgba(229, 72, 77, 0.1);
+  --c-income: #0f9d76;
+  --c-expense: #e5484d;
+  --radius-sm: 10px;
+  --radius: 16px;
+  --radius-lg: 22px;
+  --tabbar-h: 58px;
+  --shadow-1: 0 1px 2px rgba(16, 24, 40, 0.04), 0 6px 20px rgba(16, 24, 40, 0.05);
+  --shadow-2: 0 8px 30px rgba(16, 24, 40, 0.14);
+  --font: system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', 'Segoe UI', sans-serif;
+}
+
+html[data-theme='dark'] {
+  color-scheme: dark;
+  --c-bg: #0d1117;
+  --c-surface: #161b22;
+  --c-surface-2: #1f2630;
+  --c-text: #e8edf5;
+  --c-text-2: #9aa4b2;
+  --c-text-3: #6b7482;
+  --c-border: #262d38;
+  --c-primary: #34d399;
+  --c-primary-strong: #6ee7b7;
+  --c-primary-soft: rgba(52, 211, 153, 0.14);
+  --c-danger: #ff6b6b;
+  --c-danger-soft: rgba(255, 107, 107, 0.12);
+  --c-income: #34d399;
+  --c-expense: #ff7b7b;
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-2: 0 12px 40px rgba(0, 0, 0, 0.5);
+}

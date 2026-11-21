@@ -1,0 +1,162 @@
+import { beforeEach, describe, expect, it } from 'vitest'
+import { db } from '@/db/schema'
+import { resetDb } from '@/db/init'
+import { createTransaction, listTransactions } from '@/repositories/transactions'
+import { deleteAccount, listAccounts, createAccount } from '@/repositories/accounts'
+import { createCategory, deleteCategory, listCategories } from '@/repositories/categories'
+import { getBudget, setBudget } from '@/repositories/budgets'
+
+beforeEach(async () => {
+  await resetDb()
+})
+
+async function firstAccountId(): Promise<string> {
+  const accounts = await listAccounts()
+  return accounts[0].id
+}
+
+async function firstExpenseCategoryId(): Promise<string> {
+  const categories = await listCategories('expense')
+  return categories[0].id
+}
+
+describe('流水校验', () => {
+  it('金额必须大于 0', async () => {
+    await expect(
+      createTransaction({
+        kind: 'expense',
+        amountCents: 0,
+        categoryId: null,
+        accountId: await firstAccountId(),
+        toAccountId: null,
+        date: '2026-11-21',
+        note: ''
+      })
+    ).rejects.toThrow('金额必须大于 0')
+  })
+
+  it('拒绝非法日期', async () => {
+    await expect(
+      createTransaction({
+        kind: 'expense',
+        amountCents: 100,
+        categoryId: null,
+        accountId: await firstAccountId(),
+        toAccountId: null,
+        date: '2026-02-30',
+        note: ''
+      })
+    ).rejects.toThrow('日期格式不正确')
+  })
+
+  it('转账不允许同账户', async () => {
+    const id = await firstAccountId()
+    await expect(
+      createTransaction({
+        kind: 'transfer',
+        amountCents: 100,
+        categoryId: null,
+        accountId: id,
+        toAccountId: id,
+        date: '2026-11-21',
+        note: ''
+      })
+    ).rejects.toThrow('转出与转入账户不能相同')
+  })
+
+  it('转账自动清空分类', async () => {
+    const accounts = await listAccounts()
+    const tx = await createTransaction({
+      kind: 'transfer',
+      amountCents: 500,
+      categoryId: await firstExpenseCategoryId(),
+      accountId: accounts[0].id,
+      toAccountId: accounts[1].id,
+      date: '2026-11-21',
+      note: ''
+    })
+    expect(tx.categoryId).toBeNull()
+  })
+})
+
+describe('列表查询', () => {
+  it('按月份与关键词过滤', async () => {
+    const accountId = await firstAccountId()
+    const categoryId = await firstExpenseCategoryId()
+    await createTransaction({ kind: 'expense', amountCents: 100, categoryId, accountId, toAccountId: null, date: '2026-11-01', note: '早餐' })
+    await createTransaction({ kind: 'expense', amountCents: 200, categoryId, accountId, toAccountId: null, date: '2026-10-01', note: '晚餐' })
+
+    const november = await listTransactions({ month: '2026-11' })
+    expect(november).toHaveLength(1)
+    expect(november[0].note).toBe('早餐')
+
+    const keyword = await listTransactions({ keyword: '晚' })
+    expect(keyword).toHaveLength(1)
+    expect(keyword[0].amountCents).toBe(200)
+  })
+})
+
+describe('分类与账户保护', () => {
+  it('内置分类不可删除', async () => {
+    const categories = await listCategories('expense')
+    const result = await deleteCategory(categories[0].id)
+    expect(result.ok).toBe(false)
+    expect(result.reason).toContain('内置')
+  })
+
+  it('被引用的自定义分类不可删除', async () => {
+    const category = await createCategory({ kind: 'expense', name: '咖啡', icon: 'food', color: '#111111' })
+    await createTransaction({
+      kind: 'expense',
+      amountCents: 1800,
+      categoryId: category.id,
+      accountId: await firstAccountId(),
+      toAccountId: null,
+      date: '2026-11-02',
+      note: ''
+    })
+    const result = await deleteCategory(category.id)
+    expect(result.ok).toBe(false)
+    expect(result.reason).toContain('流水')
+  })
+
+  it('未被引用的自定义分类可删除', async () => {
+    const category = await createCategory({ kind: 'expense', name: '临时', icon: 'other', color: '#222222' })
+    expect((await deleteCategory(category.id)).ok).toBe(true)
+    expect(await db.categories.get(category.id)).toBeUndefined()
+  })
+
+  it('有流水的账户不能删除', async () => {
+    const accountId = await firstAccountId()
+    await createTransaction({
+      kind: 'expense',
+      amountCents: 900,
+      categoryId: await firstExpenseCategoryId(),
+      accountId,
+      toAccountId: null,
+      date: '2026-11-03',
+      note: ''
+    })
+    const result = await deleteAccount(accountId)
+    expect(result.ok).toBe(false)
+    expect(result.reason).toContain('归档')
+  })
+
+  it('没有流水的账户可以删除', async () => {
+    const account = await createAccount({ name: '临时账户', type: 'other', initialBalanceCents: 0 })
+    expect((await deleteAccount(account.id)).ok).toBe(true)
+  })
+})
+
+describe('预算', () => {
+  it('设置、读取与清除', async () => {
+    await setBudget('2026-11', null, 300000)
+    expect(await getBudget('2026-11', null)).toBe(300000)
+
+    await setBudget('2026-11', 'food-id', 50000)
+    expect(await getBudget('2026-11', 'food-id')).toBe(50000)
+
+    await setBudget('2026-11', null, 0)
+    expect(await getBudget('2026-11', null)).toBe(0)
+  })
+})
