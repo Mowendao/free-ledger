@@ -16,6 +16,7 @@ import { requestPersistentStorage } from '@/services/storage'
 import { accountIcon } from '@/services/accountMeta'
 import { toast } from '@/services/toast'
 import { confirmDialog } from '@/services/confirm'
+import { learnMerchantRule } from '@/repositories/settings'
 import AppIcon from '@/components/AppIcon.vue'
 import AmountKeypad from '@/components/AmountKeypad.vue'
 import CategoryGrid from '@/components/CategoryGrid.vue'
@@ -96,6 +97,16 @@ function onDateChange(event: Event): void {
   if (value) date.value = value
 }
 
+/** 记住「商户 → 分类」，下次导入微信账单可自动归类。 */
+async function rememberMerchant(input: {
+  kind: TxKind
+  categoryId: string | null
+  note: string
+}): Promise<void> {
+  if (input.kind === 'transfer' || !input.categoryId || !input.note.trim()) return
+  await learnMerchantRule(input.note, input.categoryId)
+}
+
 async function save(): Promise<void> {
   if (saving.value) return
   if (!amountCents.value) {
@@ -138,6 +149,7 @@ async function save(): Promise<void> {
     }
     if (editingId.value) {
       await updateTransaction(editingId.value, input)
+      await rememberMerchant(input)
       await store.reloadAll()
       await store.setMonth(monthOf(date.value))
       toast('修改已保存')
@@ -145,6 +157,7 @@ async function save(): Promise<void> {
       return
     }
     await createTransaction(input)
+    await rememberMerchant(input)
     await store.reloadAll()
     void requestPersistentStorage()
     toast('已记一笔')

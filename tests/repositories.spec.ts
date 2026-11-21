@@ -16,7 +16,13 @@ import {
 import { deleteAccount, listAccounts, createAccount } from '@/repositories/accounts'
 import { createCategory, deleteCategory, listCategories } from '@/repositories/categories'
 import { getBudget, setBudget } from '@/repositories/budgets'
-import { getSettings, setSetting } from '@/repositories/settings'
+import {
+  getMerchantRules,
+  getSettings,
+  learnMerchantRule,
+  setMerchantRules,
+  setSetting
+} from '@/repositories/settings'
 
 beforeEach(async () => {
   await resetDb()
@@ -360,5 +366,16 @@ describe('界面风格设置', () => {
   it('未知皮肤回退为宣纸', async () => {
     await setSetting('skin', 'nope' as never)
     expect((await getSettings()).skin).toBe('ink')
+  })
+})
+
+describe('商户规则', () => {
+  it('学习、读取并清除', async () => {
+    const categoryId = await firstExpenseCategoryId()
+    await learnMerchantRule('便利店 · 矿泉水', categoryId)
+    expect(await getMerchantRules()).toEqual([{ pattern: '便利店', categoryId }])
+
+    await setMerchantRules([])
+    expect(await getMerchantRules()).toEqual([])
   })
 })

@@ -23,8 +23,9 @@ import {
   requestPersistentStorage,
   type StorageStatus
 } from '@/services/storage'
-import { markBackupNow } from '@/repositories/settings'
+import { getMerchantRules, markBackupNow, setMerchantRules } from '@/repositories/settings'
 import { addImportedTransactions } from '@/repositories/transactions'
+import { applyMerchantRules } from '@/services/merchantRules'
 import { decodeWechatCsv, parseWechatBill } from '@/services/wechat'
 import PageHeader from '@/components/PageHeader.vue'
 import AppIcon from '@/components/AppIcon.vue'
@@ -48,6 +49,7 @@ const requestingPersist = ref(false)
 const wechatInput = ref<HTMLInputElement | null>(null)
 const wechatAccountId = ref('')
 const wechatImporting = ref(false)
+const merchantRuleCount = ref(0)
 
 const wechatAccounts = computed(() => store.activeAccounts)
 
@@ -105,6 +107,7 @@ onMounted(async () => {
   const preferred =
     store.activeAccounts.find((account) => account.type === 'wechat') ?? store.activeAccounts[0]
   wechatAccountId.value = preferred?.id ?? ''
+  merchantRuleCount.value = (await getMerchantRules()).length
 })
 
 function triggerWechatImport(): void {
@@ -135,6 +138,11 @@ async function onWechatFile(event: Event): Promise<void> {
     return
   }
 
+  const rules = await getMerchantRules()
+  const categoryIds = new Set(store.categories.map((category) => category.id))
+  const applied = applyMerchantRules(result.transactions, rules, categoryIds)
+  merchantRuleCount.value = rules.length
+
   const stats = result.stats
   const ok = await confirmDialog({
     title: '导入微信账单？',
@@ -143,19 +151,21 @@ async function onWechatFile(event: Event): Promise<void> {
       `收入 ${stats.incomeCount} 笔 ¥${formatCents(stats.incomeCents)}；` +
       `跳过 ${stats.skipped} 笔不计收支` +
       `${stats.invalid > 0 ? `、${stats.invalid} 笔无法识别` : ''}。` +
-      `全部记为「未分类」，导入后可在明细里逐笔修改。`,
+      (applied.applied > 0
+        ? `其中 ${applied.applied} 笔按历史商户规则自动分类，其余记为「未分类」。`
+        : '全部记为「未分类」，导入后可在明细里逐笔修改。'),
     confirmText: '导入'
   })
   if (!ok) return
 
   wechatImporting.value = true
   try {
-    const imported = await addImportedTransactions(result.transactions)
+    const imported = await addImportedTransactions(applied.transactions)
     await store.reloadAll()
     await Promise.all([loadStats(), loadStorage()])
     toast(
       imported.imported > 0
-        ? `已导入 ${imported.imported} 笔未分类流水${imported.skipped > 0 ? `，跳过 ${imported.skipped} 笔已存在` : ''}`
+        ? `已导入 ${imported.imported} 笔${applied.applied > 0 ? `（${applied.applied} 笔自动分类）` : '未分类流水'}${imported.skipped > 0 ? `，跳过 ${imported.skipped} 笔已存在` : ''}`
         : '这些记录都已存在，没有新增',
       imported.imported > 0 ? 'success' : 'info'
     )
@@ -164,6 +174,19 @@ async function onWechatFile(event: Event): Promise<void> {
   } finally {
     wechatImporting.value = false
   }
+}
+
+async function clearMerchantRules(): Promise<void> {
+  const ok = await confirmDialog({
+    title: '清除商户规则？',
+    message: '之后导入微信账单将不再自动分类，已有账目不受影响。',
+    confirmText: '清除',
+    danger: true
+  })
+  if (!ok) return
+  await setMerchantRules([])
+  merchantRuleCount.value = 0
+  toast('商户规则已清除')
 }
 
 async function enablePersistent(): Promise<void> {
@@ -427,7 +450,11 @@ async function clearData(): Promise<void> {
         <AppIcon name="upload" :size="17" />
         {{ wechatImporting ? '导入中…' : '选择微信账单 CSV' }}
       </button>
-      <p class="hint">导入后统一为「未分类」；在明细页筛选「未分类」即可逐笔修改。</p>
+      <p v-if="merchantRuleCount > 0" class="hint">
+        已学习 {{ merchantRuleCount }} 条商户规则，导入时会自动套用。
+        <button class="link" @click="clearMerchantRules">清除规则</button>
+      </p>
+      <p class="hint">未匹配规则的记录保持「未分类」；导入后在明细筛选「未分类」逐笔修改。</p>
     </section>
 
     <section class="card card--danger">
