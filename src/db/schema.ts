@@ -59,14 +59,18 @@ export interface Meta {
   value: unknown
 }
 
+export type SkinId = 'ink' | 'mono' | 'celadon' | 'kraft'
+
 export interface AppSettings {
   theme: 'light' | 'dark' | 'system'
+  skin: SkinId
   currency: string
   lastBackupAt: string
 }
 
 export const DEFAULT_SETTINGS: AppSettings = {
   theme: 'system',
+  skin: 'ink',
   currency: '¥',
   lastBackupAt: ''
 }

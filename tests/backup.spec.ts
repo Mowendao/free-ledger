@@ -88,6 +88,15 @@ describe('备份往返', () => {
     await replaceWithBackup(backup)
     expect((await getSettings()).theme).toBe('dark')
   })
+
+  it('界面风格随备份恢复', async () => {
+    await setSetting('skin', 'kraft')
+    const backup = parseBackup(serializeBackup(await buildBackup()))
+
+    await setSetting('skin', 'ink')
+    await replaceWithBackup(backup)
+    expect((await getSettings()).skin).toBe('kraft')
+  })
 })
 
 describe('备份校验', () => {

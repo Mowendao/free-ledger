@@ -1769,6 +1769,103 @@ code {
   transform: translateY(-6px);
 }
 
+/* ---------- 主题皮肤 ---------- */
+.card,
+.summary-card,
+.stat-card,
+.list,
+.keypad,
+.budget-total {
+  box-shadow: var(--shadow-1);
+}
+
+.skin-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.skin-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  text-align: left;
+  background: transparent;
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-sm);
+}
+
+.skin-card.is-active {
+  border-color: var(--c-seal);
+}
+
+.skin-card__preview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 46px;
+  padding: 0 10px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 2px;
+}
+
+.skin-card__num {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.skin-card__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.skin-card__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--c-text);
+}
+
+.skin-card.is-active .skin-card__name {
+  color: var(--c-seal);
+}
+
+.skin-card__desc {
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--c-text-3);
+}
+
+/* 分类彩色图标按皮肤统一处理，避免与主题冲突 */
+html[data-skin='mono'] :is(.bubble, .category-strip__icon, .category-manage__icon, .legend__dot, .donut__svg) {
+  filter: grayscale(1);
+}
+
+html[data-skin='celadon'] :is(.bubble, .category-strip__icon, .category-manage__icon, .legend__dot, .donut__svg) {
+  filter: saturate(0.72);
+}
+
+html[data-skin='kraft'] :is(.bubble, .category-strip__icon, .category-manage__icon, .legend__dot, .donut__svg) {
+  filter: sepia(0.16) saturate(0.85);
+}
+
+html[data-skin='celadon'] .chip,
+html[data-skin='celadon'] .seg--small .seg__item {
+  border-radius: 999px;
+}
+
+html[data-skin='kraft'] .row,
+html[data-skin='kraft'] .tx-row {
+  border-bottom-style: dashed;
+}
+
+html[data-skin='kraft'] .page-header {
+  border-bottom-style: double;
+  border-bottom-width: 3px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

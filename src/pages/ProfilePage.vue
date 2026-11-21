@@ -4,6 +4,8 @@ import { useRouter } from 'vue-router'
 import { useLedgerStore } from '@/stores/useLedger'
 import { formatCents } from '@/services/money'
 import { toast } from '@/services/toast'
+import { SKINS } from '@/services/skins'
+import type { SkinId } from '@/db/schema'
 import AppIcon from '@/components/AppIcon.vue'
 import { version } from '../../package.json'
 
@@ -38,6 +40,11 @@ const needBackup = computed(() => {
 
 async function setTheme(value: 'light' | 'dark' | 'system'): Promise<void> {
   await store.saveSetting('theme', value)
+}
+
+async function setSkin(value: SkinId): Promise<void> {
+  await store.saveSetting('skin', value)
+  toast(`已切换到「${SKINS.find((skin) => skin.id === value)?.name ?? value}」`)
 }
 
 async function setCurrency(value: string): Promise<void> {
@@ -122,6 +129,29 @@ async function setCurrency(value: string): Promise<void> {
         </span>
         <AppIcon name="chevron-right" :size="18" class="muted" />
       </button>
+    </section>
+
+    <section class="card">
+      <h2 class="card-title">界面风格</h2>
+      <div class="skin-grid">
+        <button
+          v-for="skin in SKINS"
+          :key="skin.id"
+          class="skin-card"
+          :class="{ 'is-active': store.settings.skin === skin.id }"
+          @click="setSkin(skin.id)"
+        >
+          <span
+            class="skin-card__preview"
+            :style="{ background: skin.bg, color: skin.text, fontFamily: skin.font }"
+          >
+            <span class="skin-card__num">¥1,280</span>
+            <span class="skin-card__dot" :style="{ background: skin.accent }" />
+          </span>
+          <span class="skin-card__name">{{ skin.name }}</span>
+          <span class="skin-card__desc">{{ skin.desc }}</span>
+        </button>
+      </div>
     </section>
 
     <section class="card">

@@ -1,7 +1,8 @@
-/* 水墨账簿 · 设计令牌
-   纸：宣纸/茶纸底色；墨：正文与线条；朱砂：唯一强调色（印章、选中、支出）。
-   不使用渐变、不使用高饱和糖果色，全部颜色来自纸、墨、朱砂、黛青。 */
-:root {
+/* 主题系统：data-skin 选风格，data-theme 选明暗。
+   默认 :root = 宣纸账簿（浅色）。每个皮肤都定义完整的纸/墨/强调色、圆角、字体与阴影。 */
+
+:root,
+html[data-skin='ink'] {
   color-scheme: light;
 
   --c-paper: #f5efe3;
@@ -43,6 +44,124 @@
   --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
 }
 
+html[data-skin='mono'] {
+  color-scheme: light;
+
+  --c-paper: #f6f6f4;
+  --c-bg: #f6f6f4;
+  --c-surface: #ffffff;
+  --c-surface-2: #ededea;
+
+  --c-text: #111111;
+  --c-text-2: #4f4f4f;
+  --c-text-3: #8b8b8b;
+  --c-line: #dedede;
+  --c-line-strong: #bdbdbd;
+
+  --c-seal: #111111;
+  --c-seal-soft: rgba(17, 17, 17, 0.06);
+  --c-seal-ink: #ffffff;
+
+  --c-income: #4d6b5b;
+  --c-expense: #111111;
+  --c-danger: #111111;
+
+  --c-primary: #111111;
+  --c-primary-strong: #111111;
+  --c-primary-soft: rgba(17, 17, 17, 0.06);
+
+  --radius-sm: 0;
+  --radius: 0;
+  --radius-lg: 0;
+
+  --shadow-1: none;
+  --shadow-2: 0 10px 30px rgba(0, 0, 0, 0.16);
+
+  --font: system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', 'Segoe UI', sans-serif;
+  --font-sans: var(--font);
+
+  --noise: none;
+}
+
+html[data-skin='celadon'] {
+  color-scheme: light;
+
+  --c-paper: #f3f8f4;
+  --c-bg: #ecf1ed;
+  --c-surface: #f9fbf8;
+  --c-surface-2: #e2eae3;
+
+  --c-text: #243029;
+  --c-text-2: #55645b;
+  --c-text-3: #84938a;
+  --c-line: #d2ded4;
+  --c-line-strong: #b7c8ba;
+
+  --c-seal: #5c7d6a;
+  --c-seal-soft: rgba(92, 125, 106, 0.1);
+  --c-seal-ink: #f6fbf7;
+
+  --c-income: #4f7a63;
+  --c-expense: #a2604f;
+  --c-danger: #a2604f;
+
+  --c-primary: #243029;
+  --c-primary-strong: #5c7d6a;
+  --c-primary-soft: rgba(92, 125, 106, 0.1);
+
+  --radius-sm: 10px;
+  --radius: 14px;
+  --radius-lg: 20px;
+
+  --shadow-1: 0 2px 10px rgba(36, 48, 41, 0.05);
+  --shadow-2: 0 12px 34px rgba(36, 48, 41, 0.16);
+
+  --font: system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', 'Segoe UI', sans-serif;
+  --font-sans: var(--font);
+
+  --noise: none;
+}
+
+html[data-skin='kraft'] {
+  color-scheme: light;
+
+  --c-paper: #efe3cd;
+  --c-bg: #e8dcc4;
+  --c-surface: #f4ead8;
+  --c-surface-2: #ddcfb4;
+
+  --c-text: #2f2619;
+  --c-text-2: #5c4f3c;
+  --c-text-3: #8a7a61;
+  --c-line: #cbb894;
+  --c-line-strong: #b39d77;
+
+  --c-seal: #a8542f;
+  --c-seal-soft: rgba(168, 84, 47, 0.1);
+  --c-seal-ink: #f7efe2;
+
+  --c-income: #5d6b45;
+  --c-expense: #a8542f;
+  --c-danger: #8f3f22;
+
+  --c-primary: #2f2619;
+  --c-primary-strong: #a8542f;
+  --c-primary-soft: rgba(168, 84, 47, 0.1);
+
+  --radius-sm: 2px;
+  --radius: 3px;
+  --radius-lg: 4px;
+
+  --shadow-1: none;
+  --shadow-2: 0 10px 28px rgba(47, 38, 25, 0.2);
+
+  --font: 'Songti SC', 'STSong', 'Source Han Serif SC', 'Noto Serif CJK SC', 'SimSun', serif;
+  --font-sans: system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+
+  --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.07'/%3E%3C/svg%3E");
+}
+
+/* 默认暗色（等同宣纸·墨夜；皮肤缺失时的兜底） */
 html[data-theme='dark'] {
   color-scheme: dark;
 
@@ -71,4 +190,91 @@ html[data-theme='dark'] {
 
   --shadow-1: none;
   --shadow-2: 0 10px 36px rgba(0, 0, 0, 0.55);
+}
+
+html[data-theme='dark'][data-skin='mono'] {
+  --c-paper: #0f0f0f;
+  --c-bg: #0f0f0f;
+  --c-surface: #191919;
+  --c-surface-2: #232323;
+
+  --c-text: #ededed;
+  --c-text-2: #a8a8a8;
+  --c-text-3: #6f6f6f;
+  --c-line: #2e2e2e;
+  --c-line-strong: #4a4a4a;
+
+  --c-seal: #ededed;
+  --c-seal-soft: rgba(237, 237, 237, 0.08);
+  --c-seal-ink: #0f0f0f;
+
+  --c-income: #9db8a8;
+  --c-expense: #ededed;
+  --c-danger: #ededed;
+
+  --c-primary: #ededed;
+  --c-primary-strong: #ededed;
+  --c-primary-soft: rgba(237, 237, 237, 0.08);
+
+  --shadow-1: none;
+  --shadow-2: 0 10px 30px rgba(0, 0, 0, 0.6);
+  --noise: none;
+}
+
+html[data-theme='dark'][data-skin='celadon'] {
+  --c-paper: #121a16;
+  --c-bg: #121a16;
+  --c-surface: #1a241f;
+  --c-surface-2: #22302a;
+
+  --c-text: #e4ece6;
+  --c-text-2: #a9bab0;
+  --c-text-3: #74857b;
+  --c-line: #2b3831;
+  --c-line-strong: #415248;
+
+  --c-seal: #93b8a3;
+  --c-seal-soft: rgba(147, 184, 163, 0.14);
+  --c-seal-ink: #14211a;
+
+  --c-income: #8fbfa6;
+  --c-expense: #d99a86;
+  --c-danger: #d99a86;
+
+  --c-primary: #e4ece6;
+  --c-primary-strong: #93b8a3;
+  --c-primary-soft: rgba(147, 184, 163, 0.14);
+
+  --shadow-1: 0 2px 12px rgba(0, 0, 0, 0.28);
+  --shadow-2: 0 14px 38px rgba(0, 0, 0, 0.55);
+  --noise: none;
+}
+
+html[data-theme='dark'][data-skin='kraft'] {
+  --c-paper: #1a1510;
+  --c-bg: #1a1510;
+  --c-surface: #241d15;
+  --c-surface-2: #2e251a;
+
+  --c-text: #e9ddc9;
+  --c-text-2: #b6a68d;
+  --c-text-3: #85765f;
+  --c-line: #3b3124;
+  --c-line-strong: #54452f;
+
+  --c-seal: #d98a5e;
+  --c-seal-soft: rgba(217, 138, 94, 0.14);
+  --c-seal-ink: #1f1811;
+
+  --c-income: #a9b58a;
+  --c-expense: #d98a5e;
+  --c-danger: #d98a5e;
+
+  --c-primary: #e9ddc9;
+  --c-primary-strong: #d98a5e;
+  --c-primary-soft: rgba(217, 138, 94, 0.14);
+
+  --shadow-1: none;
+  --shadow-2: 0 12px 32px rgba(0, 0, 0, 0.55);
+  --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
 }

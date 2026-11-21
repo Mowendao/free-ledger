@@ -1,10 +1,12 @@
 import { db, DEFAULT_SETTINGS, type AppSettings } from '@/db/schema'
+import { resolveSkin } from '@/services/skins'
 
 export async function getSettings(): Promise<AppSettings> {
   const rows = await db.settings.toArray()
   const map = new Map(rows.map((row) => [row.key, row.value]))
   return {
     theme: (map.get('theme') as AppSettings['theme']) ?? DEFAULT_SETTINGS.theme,
+    skin: resolveSkin(map.get('skin')),
     currency: (map.get('currency') as string) ?? DEFAULT_SETTINGS.currency,
     lastBackupAt: (map.get('lastBackupAt') as string) ?? DEFAULT_SETTINGS.lastBackupAt
   }

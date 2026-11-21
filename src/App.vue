@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, watch } from 'vue'
 import { useLedgerStore } from '@/stores/useLedger'
+import { resolveSkin, skinMeta } from '@/services/skins'
 import TabBar from '@/components/TabBar.vue'
 import ToastHost from '@/components/ToastHost.vue'
 import ConfirmHost from '@/components/ConfirmHost.vue'
@@ -13,11 +14,20 @@ function applyTheme(): void {
     theme === 'dark' ||
     (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
   document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+  const skin = skinMeta(resolveSkin(store.settings.skin))
   const meta = document.querySelector('meta[name="theme-color"]')
-  if (meta) meta.setAttribute('content', dark ? '#16140f' : '#f5efe3')
+  if (meta) meta.setAttribute('content', dark ? skin.themeColorDark : skin.themeColor)
+}
+
+function applySkin(): void {
+  document.documentElement.dataset.skin = resolveSkin(store.settings.skin)
 }
 
 watch(() => store.settings.theme, applyTheme, { immediate: true })
+watch(() => store.settings.skin, () => {
+  applySkin()
+  applyTheme()
+}, { immediate: true })
 
 onMounted(() => {
   const media = window.matchMedia('(prefers-color-scheme: dark)')

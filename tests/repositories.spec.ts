@@ -5,6 +5,7 @@ import { createTransaction, listTransactions } from '@/repositories/transactions
 import { deleteAccount, listAccounts, createAccount } from '@/repositories/accounts'
 import { createCategory, deleteCategory, listCategories } from '@/repositories/categories'
 import { getBudget, setBudget } from '@/repositories/budgets'
+import { getSettings, setSetting } from '@/repositories/settings'
 
 beforeEach(async () => {
   await resetDb()
@@ -158,5 +159,18 @@ describe('预算', () => {
 
     await setBudget('2026-11', null, 0)
     expect(await getBudget('2026-11', null)).toBe(0)
+  })
+})
+
+describe('界面风格设置', () => {
+  it('默认皮肤为宣纸，可持久化', async () => {
+    expect((await getSettings()).skin).toBe('ink')
+    await setSetting('skin', 'mono')
+    expect((await getSettings()).skin).toBe('mono')
+  })
+
+  it('未知皮肤回退为宣纸', async () => {
+    await setSetting('skin', 'nope' as never)
+    expect((await getSettings()).skin).toBe('ink')
   })
 })

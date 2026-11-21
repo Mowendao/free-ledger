@@ -6,6 +6,7 @@ import App from '@/App.vue'
 import router from '@/router'
 import { resetDb } from '@/db/init'
 import { db } from '@/db/schema'
+import { getSettings } from '@/repositories/settings'
 import { useLedgerStore } from '@/stores/useLedger'
 
 async function mountApp(): Promise<ReturnType<typeof mount>> {
@@ -70,5 +71,21 @@ describe('应用冒烟', () => {
     await flushPromises()
     expect(wrapper.text()).toContain('一纸账本，只属于你')
     expect(wrapper.text()).toContain('关于 Free Ledger')
+  })
+
+  it('可以切换界面风格并持久化', async () => {
+    const wrapper = await mountApp()
+    await router.push('/me')
+    await flushPromises()
+
+    const cards = wrapper.findAll('.skin-card')
+    expect(cards).toHaveLength(4)
+
+    await cards[1].trigger('click')
+    await new Promise((resolve) => setTimeout(resolve, 80))
+    await flushPromises()
+
+    expect(document.documentElement.dataset.skin).toBe('mono')
+    expect((await getSettings()).skin).toBe('mono')
   })
 })
