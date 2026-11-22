@@ -128,7 +128,7 @@ PWA 需要 **HTTPS**（或 localhost）才能注册 Service Worker 并安装：
 已提供 debug 签名安装包（v0.8.3，个人使用）：
 
 **下载**：<https://github.com/Mowendao/free-ledger/releases/download/v0.8.3/FreeLedger-0.8.3-debug.apk>
-SHA-256：构建后更新
+SHA-256：`40689DE98A7741F8D2C02822D74E67E276DC155A7756BCFCC13635829CFEBEE5`
 
 - 基于 Capacitor 打包，Web 资源内置在 APK 中，首次打开即可离线使用。
 - **数据与浏览器 PWA 不互通**：先在 PWA「数据备份与导出」导出 JSON，再到 APK 同一页面导入。

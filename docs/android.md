@@ -21,7 +21,7 @@ Web 资源在 APK 内（`android/app/src/main/assets/public`），首次打开�
 
 <https://github.com/Mowendao/free-ledger/releases/download/v0.8.3/FreeLedger-0.8.3-debug.apk>
 
-SHA-256：构建后更新
+SHA-256：`40689DE98A7741F8D2C02822D74E67E276DC155A7756BCFCC13635829CFEBEE5`
 
 安装时系统会提示「未知来源」，允许浏览器/文件管理器安装即可。
 
