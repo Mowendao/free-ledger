@@ -6,7 +6,7 @@ Free Ledger 使用 [Capacitor](https://capacitorjs.com/) 把同一套 PWA 资源
 Web 资源在 APK 内（`android/app/src/main/assets/public`），首次打开即可离线使用，不依赖线上站点。
 
 - 包名：`io.github.mowendao.freeledger`
-- 版本：`0.8.2`（versionCode 802）
+- 版本：`0.8.3`（versionCode 803）
 - 最低系统：Android 6.0（API 23）
 - 当前安装包：debug 签名，仅适合个人安装
 
@@ -19,9 +19,9 @@ Web 资源在 APK 内（`android/app/src/main/assets/public`），首次打开�
 
 ## 下载
 
-<https://github.com/Mowendao/free-ledger/releases/download/v0.8.2/FreeLedger-0.8.2-debug.apk>
+<https://github.com/Mowendao/free-ledger/releases/download/v0.8.3/FreeLedger-0.8.3-debug.apk>
 
-SHA-256：`473BD99CB3A62C433ED204D41F8F39EAC59204193CD76915AD87643FB7CCF38C`
+SHA-256：构建后更新
 
 安装时系统会提示「未知来源」，允许浏览器/文件管理器安装即可。
 

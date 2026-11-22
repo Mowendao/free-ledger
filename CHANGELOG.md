@@ -2,6 +2,12 @@
 
 本项目遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## [0.8.3] - 2026-11-22
+
+### 改进
+
+- Android 返回键：优先在 WebView 内后退（子页面回上一层、切换过的 Tab 回上一个），回到首页后才退出应用。
+
 ## [0.8.2] - 2026-11-21
 
 ### 打包
